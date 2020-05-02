@@ -1,0 +1,17 @@
+package serverpb;
+
+option go_package = ".;serverpb";
+
+
+service Put {
+    rpc Put (PutRequest) returns (PutResponse) {}
+}
+
+message PutRequest {
+    required string name = 1;
+    required string object = 2;
+}
+
+message PutResponse {
+    required int32 status = 3;
+}
