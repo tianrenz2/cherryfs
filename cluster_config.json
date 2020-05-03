@@ -1,5 +1,5 @@
 {
-  "subgroupNum": 3,
+  "subgroupnum": 3,
   "hosts": [
     {
       "hostname": "host1",
@@ -14,6 +14,30 @@
       "address": "192.168.0.2:50010",
       "dirs": [
         "/var/lib/zbs/meta2"
+      ]
+    },
+    {
+      "hostname": "host3",
+      "address": "192.168.0.3:50010",
+      "dirs": [
+        "/var/lib/zbs/meta",
+        "/var/lib/zbs/mata"
+      ]
+    },
+    {
+      "hostname": "host4",
+      "address": "192.168.0.5:50010",
+      "dirs": [
+        "/var/lib/zbs/meta",
+        "/var/lib/zbs/mata"
+      ]
+    },
+    {
+      "hostname": "host6",
+      "address": "192.168.0.6:50010",
+      "dirs": [
+        "/var/lib/zbs/fsd",
+        "/var/lib/zbs/vvv"
       ]
     }
   ]

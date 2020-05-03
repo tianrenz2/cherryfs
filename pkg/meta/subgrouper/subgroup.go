@@ -1,13 +1,16 @@
 package subgrouper
 
 import (
-	"cherryfs/pkg/meta/mgt"
 	cfg "cherryfs/pkg/config"
+	"cherryfs/pkg/roles/host"
+	"cherryfs/pkg/roles/dir"
+	"fmt"
 )
 
 type SubGroup struct {
 	SubGroupId int
-	Hosts []mgt.Host
+	Hosts []host.Host
+	DManager dir.DirManager
 }
 
 type SubGroupManager struct {
@@ -16,8 +19,14 @@ type SubGroupManager struct {
 
 var GlobalSubGroupManager SubGroupManager
 
-func (subGroupMg *SubGroupManager) InitSubgroupSetup(allHosts []mgt.Host) {
-	subGroupMg.SubGroups = InitSubgroups(allHosts)
+func (subGroupMg *SubGroupManager) InitSubgroupSetup(allHosts []host.Host) (error) {
+
+	subgroups, err := subGroupMg.InitSubgroups(allHosts)
+	if err != nil{
+		return fmt.Errorf("failed to init subgroups: %v", err)
+	}
+	subGroupMg.SubGroups = subgroups
+	return nil
 }
 
 func (subGroupMg *SubGroupManager) GetSubGroupNumber() int {
@@ -28,7 +37,7 @@ func (subGroupMg *SubGroupManager) GetSubGroupById(SubgroupId int) SubGroup {
 	return subGroupMg.SubGroups[SubgroupId]
 }
 
-func InitSubgroups(allHosts []mgt.Host) []SubGroup {
+func (subGroupMg *SubGroupManager)InitSubgroups(allHosts []host.Host) ([]SubGroup, error){
 	var subgroupNum = 0
 	hostNum := len(allHosts)
 
@@ -42,18 +51,32 @@ func InitSubgroups(allHosts []mgt.Host) []SubGroup {
 	numPerGroup := hostNum / subgroupNum + 1
 
 	for groupIndex :=0; groupIndex < subgroupNum; groupIndex++ {
-		var subgroup = SubGroup{Hosts: make([]mgt.Host, 0), SubGroupId:groupIndex}
-		splitStart := groupIndex * numPerGroup
-		splitEnd := splitStart + numPerGroup
+		groupStart := groupIndex * numPerGroup
+		groupEnd := groupStart + numPerGroup
+		subgroup, err := subGroupMg.InitOneSubgroup(allHosts, groupIndex, groupStart, groupEnd)
+		if err != nil {
+			return subgroups, fmt.Errorf("failed to init subgroups: %v", err)
+		}
 
-		if splitEnd > len(allHosts) {
-			splitEnd = len(allHosts)
-		}
-		for hostIndex:=splitStart; hostIndex < splitEnd; hostIndex++ {
-			subgroup.Hosts = append(subgroup.Hosts, allHosts[hostIndex])
-		}
 		subgroups = append(subgroups, subgroup)
 	}
 
-	return subgroups
+	return subgroups, nil
+}
+
+func (subGroupMg *SubGroupManager) InitOneSubgroup(allHosts []host.Host, groupIndex, groupStart, groupEnd int) (SubGroup, error) {
+	var subgroup = SubGroup{Hosts: make([]host.Host, 0), SubGroupId:groupIndex}
+	subgroup.DManager = dir.DirManager{ReliefNum: dir.DefaultReliefNum}
+
+	if groupEnd > len(allHosts) {
+		groupEnd = len(allHosts)
+	}
+	for hostIndex:= groupStart; hostIndex < groupEnd; hostIndex++ {
+		for i, _ := range allHosts[hostIndex].Dirs {
+			allHosts[hostIndex].Dirs[i].Manager = subgroup.DManager
+		}
+		subgroup.Hosts = append(subgroup.Hosts, allHosts[hostIndex])
+	}
+
+	return subgroup, nil
 }

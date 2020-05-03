@@ -9,13 +9,14 @@ service AskPut {
 
 message AskPutRequest {
     required string name = 1;
-    required string object = 2;
-    required string objectHash = 3;
+    required int64 size = 2;
+    required string object = 3;
+    required string objectHash = 4;
 }
 
 message AskPutResponse {
-    required int32 status = 3;
-    required string destAddr = 4;
-    required string destDir = 5;
-    optional string msg = 6;
+    required int32 status = 1;
+    required string destAddr = 2;
+    required string destDir = 3;
+    optional string msg = 4;
 }

@@ -4,6 +4,8 @@ import (
 	"io/ioutil"
 	"log"
 	"encoding/json"
+	"cherryfs/pkg/roles/host"
+	"cherryfs/pkg/roles/dir"
 )
 
 const (
@@ -36,15 +38,15 @@ func LoadConfig() Config {
 	return config
 }
 
-func LoadHosts(configHosts []ConfigHost) []Host {
-	var hosts = make([]Host, 0)
+func LoadHosts(configHosts []ConfigHost) []host.Host {
+	var hosts = make([]host.Host, 0)
 	for _, configHost := range configHosts {
-		dirs := make([]Dir, 0)
-		for _, dir := range configHost.Dirs {
-			dirs = append(dirs, Dir{Path:dir})
+		dirs := make([]dir.Dir, 0)
+		for _, d := range configHost.Dirs {
+			dirs = append(dirs, dir.Dir {Path:d})
 		}
 
-		hosts = append(hosts, Host{
+		hosts = append(hosts, host.Host{
 			Hostname: configHost.Hostname,
 			Address: configHost.Address,
 			Dirs:dirs,

@@ -10,7 +10,7 @@ type Dir struct {
 
 func (dir *Dir) GetBaseScore() float64 {
 	reliefNum := int64(dir.Manager.ReliefNum)
-	numerator := dir.TotalSpace - dir.UsedSpace
-	denominator := (dir.UsedSpace + reliefNum) / (dir.TotalSpace + reliefNum)
+	numerator := float64(dir.TotalSpace - dir.UsedSpace)
+	denominator := float64(dir.UsedSpace + reliefNum) / float64(dir.TotalSpace + reliefNum)
 	return float64(numerator / denominator)
 }

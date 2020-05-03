@@ -2,7 +2,10 @@ package allocator
 
 import (
 	"cherryfs/pkg/meta/subgrouper"
-	"cherryfs/pkg/meta/mgt"
+	"cherryfs/pkg/roles/dir"
+	"cherryfs/pkg/roles/host"
+	"cherryfs/pkg/object"
+	"fmt"
 )
 
 /*
@@ -11,15 +14,14 @@ import (
 */
 
 type Target struct {
-	host mgt.Host
-	dir mgt.Dir
+	Host host.Host
+	Dir dir.Dir
 }
 
-
-func (allocator *Allocator) AllocateTargets(subgroups []subgrouper.SubGroup) ([]Target, error) {
+func (allocator *Allocator) AllocateTargetsFromSgs(subgroups []subgrouper.SubGroup, obj object.Object) ([]Target, error) {
 	var allocatedTgs = make([]Target, 0)
 	for _, subgroup := range subgroups {
-		target, err := allocator.AllocateTargetFromSg(subgroup)
+		target, err := allocator.AllocateTargetFromSg(subgroup, obj)
 		if err != nil{
 			return allocatedTgs, err
 		}
@@ -28,16 +30,30 @@ func (allocator *Allocator) AllocateTargets(subgroups []subgrouper.SubGroup) ([]
 	return allocatedTgs, nil
 }
 
+func (allocator *Allocator) AllocateTargetFromSg(subgroup subgrouper.SubGroup, obj object.Object) (Target, error) {
+	var selectedHost interface{} = nil
+	var selectedDir interface{} = nil
+	var maxScore float64 = 0
 
-func (allocator *Allocator) AllocateTargetFromSg(subgroup subgrouper.SubGroup) (Target, error) {
-	var selectedHost = nil
-	var selectedDir = nil
-	var maxScore = 0
+	target := Target{}
 
-	for _, host := range subgroup.Hosts {
-		for _, dir := range host.Dirs {
-
+	for _, h := range subgroup.Hosts {
+		for _, d := range h.Dirs {
+			baseScore := d.GetBaseScore()
+			multiplier := d.TotalSpace - d.UsedSpace - obj.Size
+			score := baseScore * float64(multiplier)
+			if score > maxScore {
+				maxScore = score
+				selectedHost = h
+				selectedDir = d
+			}
 		}
 	}
+	if selectedHost == nil || selectedDir == nil {
+		return target, fmt.Errorf("Did not find qualified dir in subgroup %d", subgroup.SubGroupId)
+	}
 
+	target.Host = selectedHost.(host.Host)
+	target.Dir = selectedDir.(dir.Dir)
+	return target, nil
 }
