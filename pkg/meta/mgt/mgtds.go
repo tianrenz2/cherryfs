@@ -1,22 +1,18 @@
-package main
+package mgt
 
-type Dir struct {
-	uuid string
-	name string
-	totalSpace int64
-	usedSpace int64
-}
+import (
+	"cherryfs/pkg/meta/subgrouper"
+	"cherryfs/pkg/roles/dir"
+)
 
 type Host struct {
-	address string
-	dirs []Dir
-}
-
-type SubGroup struct {
-	hosts []Host
+	Hostname string
+	Address string
+	Dirs []dir.Dir
 }
 
 type GlobalConfig struct {
-	subGroupNum int
-	subGroups []SubGroup
+	SubGroupNum int
+	SubGroups []subgrouper.SubGroup
 }
+

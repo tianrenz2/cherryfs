@@ -1,10 +1,9 @@
-package main
+package mgt
 
 import (
 	"io/ioutil"
 	"log"
 	"encoding/json"
-	"fmt"
 )
 
 const (
@@ -18,28 +17,38 @@ type ConfigHost struct {
 }
 
 type Config struct {
-	SubgroupNum int
-	ConfigHosts []ConfigHost
+	Subgroupnum int
+	Hosts []ConfigHost
 }
 
-func loadConfig() []ConfigHost {
+func LoadConfig() Config {
 	data, err := ioutil.ReadFile(configPath)
 	if err != nil {
 		log.Fatalf("Failed to load the config file: %v", err)
 	}
+	var config = Config{}
 
-	var configHosts = make([]ConfigHost, 0)
+	e := json.Unmarshal([]byte(data), &config)
 
-	json.Unmarshal([]byte(data), &configHosts)
-
-	for _, host := range configHosts {
-		log.Println(fmt.Sprintf("Found host: %v", host))
+	if err != nil {
+		log.Fatalf("%v", e)
 	}
-	return configHosts
+	return config
 }
 
+func LoadHosts(configHosts []ConfigHost) []Host {
+	var hosts = make([]Host, 0)
+	for _, configHost := range configHosts {
+		dirs := make([]Dir, 0)
+		for _, dir := range configHost.Dirs {
+			dirs = append(dirs, Dir{Path:dir})
+		}
 
-
-func main() {
-	loadConfig()
+		hosts = append(hosts, Host{
+			Hostname: configHost.Hostname,
+			Address: configHost.Address,
+			Dirs:dirs,
+		})
+	}
+	return hosts
 }

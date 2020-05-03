@@ -14,7 +14,7 @@ const (
 )
 
 type server struct {
-	pb.UnimplementedPutServer
+	pb.UnimplementedAskPutServer
 }
 
 func startServer()  {
@@ -24,10 +24,17 @@ func startServer()  {
 	}
 
 	s := grpc.NewServer()
-	pb.RegisterPutServer(s, &server{})
+	pb.RegisterAskPutServer(s, &server{})
 	if err := s.Serve(lis); err != nil {
 		log.Fatalf("Failed to serve: %v", err)
 	}
+}
+
+func AskPut(askPutReq pb.AskPutRequest) {
+	objName := askPutReq.Name
+	objHash := askPutReq.ObjectHash
+
+
 }
 
 func main()  {

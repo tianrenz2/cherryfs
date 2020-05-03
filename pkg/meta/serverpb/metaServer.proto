@@ -1,17 +1,21 @@
-package serverpb;
+package metaserverpb;
 
 option go_package = ".;serverpb";
 
 
-service Put {
-    rpc Put (PutRequest) returns (PutResponse) {}
+service AskPut {
+    rpc AskPut (AskPutRequest) returns (AskPutResponse) {}
 }
 
-message PutRequest {
+message AskPutRequest {
     required string name = 1;
     required string object = 2;
+    required string objectHash = 3;
 }
 
-message PutResponse {
+message AskPutResponse {
     required int32 status = 3;
+    required string destAddr = 4;
+    required string destDir = 5;
+    optional string msg = 6;
 }

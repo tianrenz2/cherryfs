@@ -29,17 +29,18 @@ const (
 // of the legacy proto package is being used.
 const _ = proto.ProtoPackageIsVersion4
 
-type PutRequest struct {
+type AskPutRequest struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	Name   *string `protobuf:"bytes,1,req,name=name" json:"name,omitempty"`
-	Object *string `protobuf:"bytes,2,req,name=object" json:"object,omitempty"`
+	Name       *string `protobuf:"bytes,1,req,name=name" json:"name,omitempty"`
+	Object     *string `protobuf:"bytes,2,req,name=object" json:"object,omitempty"`
+	ObjectHash *string `protobuf:"bytes,3,req,name=objectHash" json:"objectHash,omitempty"`
 }
 
-func (x *PutRequest) Reset() {
-	*x = PutRequest{}
+func (x *AskPutRequest) Reset() {
+	*x = AskPutRequest{}
 	if protoimpl.UnsafeEnabled {
 		mi := &file_metaServer_proto_msgTypes[0]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -47,13 +48,13 @@ func (x *PutRequest) Reset() {
 	}
 }
 
-func (x *PutRequest) String() string {
+func (x *AskPutRequest) String() string {
 	return protoimpl.X.MessageStringOf(x)
 }
 
-func (*PutRequest) ProtoMessage() {}
+func (*AskPutRequest) ProtoMessage() {}
 
-func (x *PutRequest) ProtoReflect() protoreflect.Message {
+func (x *AskPutRequest) ProtoReflect() protoreflect.Message {
 	mi := &file_metaServer_proto_msgTypes[0]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -65,35 +66,45 @@ func (x *PutRequest) ProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
-// Deprecated: Use PutRequest.ProtoReflect.Descriptor instead.
-func (*PutRequest) Descriptor() ([]byte, []int) {
+// Deprecated: Use AskPutRequest.ProtoReflect.Descriptor instead.
+func (*AskPutRequest) Descriptor() ([]byte, []int) {
 	return file_metaServer_proto_rawDescGZIP(), []int{0}
 }
 
-func (x *PutRequest) GetName() string {
+func (x *AskPutRequest) GetName() string {
 	if x != nil && x.Name != nil {
 		return *x.Name
 	}
 	return ""
 }
 
-func (x *PutRequest) GetObject() string {
+func (x *AskPutRequest) GetObject() string {
 	if x != nil && x.Object != nil {
 		return *x.Object
 	}
 	return ""
 }
 
-type PutResponse struct {
+func (x *AskPutRequest) GetObjectHash() string {
+	if x != nil && x.ObjectHash != nil {
+		return *x.ObjectHash
+	}
+	return ""
+}
+
+type AskPutResponse struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	Status *int32 `protobuf:"varint,3,req,name=status" json:"status,omitempty"`
+	Status   *int32  `protobuf:"varint,3,req,name=status" json:"status,omitempty"`
+	DestAddr *string `protobuf:"bytes,4,req,name=destAddr" json:"destAddr,omitempty"`
+	DestDir  *string `protobuf:"bytes,5,req,name=destDir" json:"destDir,omitempty"`
+	Msg      *string `protobuf:"bytes,6,opt,name=msg" json:"msg,omitempty"`
 }
 
-func (x *PutResponse) Reset() {
-	*x = PutResponse{}
+func (x *AskPutResponse) Reset() {
+	*x = AskPutResponse{}
 	if protoimpl.UnsafeEnabled {
 		mi := &file_metaServer_proto_msgTypes[1]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -101,13 +112,13 @@ func (x *PutResponse) Reset() {
 	}
 }
 
-func (x *PutResponse) String() string {
+func (x *AskPutResponse) String() string {
 	return protoimpl.X.MessageStringOf(x)
 }
 
-func (*PutResponse) ProtoMessage() {}
+func (*AskPutResponse) ProtoMessage() {}
 
-func (x *PutResponse) ProtoReflect() protoreflect.Message {
+func (x *AskPutResponse) ProtoReflect() protoreflect.Message {
 	mi := &file_metaServer_proto_msgTypes[1]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -119,33 +130,60 @@ func (x *PutResponse) ProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
-// Deprecated: Use PutResponse.ProtoReflect.Descriptor instead.
-func (*PutResponse) Descriptor() ([]byte, []int) {
+// Deprecated: Use AskPutResponse.ProtoReflect.Descriptor instead.
+func (*AskPutResponse) Descriptor() ([]byte, []int) {
 	return file_metaServer_proto_rawDescGZIP(), []int{1}
 }
 
-func (x *PutResponse) GetStatus() int32 {
+func (x *AskPutResponse) GetStatus() int32 {
 	if x != nil && x.Status != nil {
 		return *x.Status
 	}
 	return 0
 }
 
+func (x *AskPutResponse) GetDestAddr() string {
+	if x != nil && x.DestAddr != nil {
+		return *x.DestAddr
+	}
+	return ""
+}
+
+func (x *AskPutResponse) GetDestDir() string {
+	if x != nil && x.DestDir != nil {
+		return *x.DestDir
+	}
+	return ""
+}
+
+func (x *AskPutResponse) GetMsg() string {
+	if x != nil && x.Msg != nil {
+		return *x.Msg
+	}
+	return ""
+}
+
 var File_metaServer_proto protoreflect.FileDescriptor
 
 var file_metaServer_proto_rawDesc = []byte{
 	0x0a, 0x10, 0x6d, 0x65, 0x74, 0x61, 0x53, 0x65, 0x72, 0x76, 0x65, 0x72, 0x2e, 0x70, 0x72, 0x6f,
-	0x74, 0x6f, 0x12, 0x08, 0x73, 0x65, 0x72, 0x76, 0x65, 0x72, 0x70, 0x62, 0x22, 0x2a, 0x0a, 0x0a,
-	0x50, 0x75, 0x74, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x12, 0x0c, 0x0a, 0x04, 0x6e, 0x61,
-	0x6d, 0x65, 0x18, 0x01, 0x20, 0x02, 0x28, 0x09, 0x12, 0x0e, 0x0a, 0x06, 0x6f, 0x62, 0x6a, 0x65,
-	0x63, 0x74, 0x18, 0x02, 0x20, 0x02, 0x28, 0x09, 0x22, 0x1d, 0x0a, 0x0b, 0x50, 0x75, 0x74, 0x52,
-	0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x12, 0x0e, 0x0a, 0x06, 0x73, 0x74, 0x61, 0x74, 0x75,
-	0x73, 0x18, 0x03, 0x20, 0x02, 0x28, 0x05, 0x32, 0x3b, 0x0a, 0x03, 0x50, 0x75, 0x74, 0x12, 0x34,
-	0x0a, 0x03, 0x50, 0x75, 0x74, 0x12, 0x14, 0x2e, 0x73, 0x65, 0x72, 0x76, 0x65, 0x72, 0x70, 0x62,
-	0x2e, 0x50, 0x75, 0x74, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x1a, 0x15, 0x2e, 0x73, 0x65,
-	0x72, 0x76, 0x65, 0x72, 0x70, 0x62, 0x2e, 0x50, 0x75, 0x74, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e,
-	0x73, 0x65, 0x22, 0x00, 0x42, 0x0c, 0x5a, 0x0a, 0x2e, 0x3b, 0x73, 0x65, 0x72, 0x76, 0x65, 0x72,
-	0x70, 0x62,
+	0x74, 0x6f, 0x12, 0x0c, 0x6d, 0x65, 0x74, 0x61, 0x73, 0x65, 0x72, 0x76, 0x65, 0x72, 0x70, 0x62,
+	0x22, 0x41, 0x0a, 0x0d, 0x41, 0x73, 0x6b, 0x50, 0x75, 0x74, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73,
+	0x74, 0x12, 0x0c, 0x0a, 0x04, 0x6e, 0x61, 0x6d, 0x65, 0x18, 0x01, 0x20, 0x02, 0x28, 0x09, 0x12,
+	0x0e, 0x0a, 0x06, 0x6f, 0x62, 0x6a, 0x65, 0x63, 0x74, 0x18, 0x02, 0x20, 0x02, 0x28, 0x09, 0x12,
+	0x12, 0x0a, 0x0a, 0x6f, 0x62, 0x6a, 0x65, 0x63, 0x74, 0x48, 0x61, 0x73, 0x68, 0x18, 0x03, 0x20,
+	0x02, 0x28, 0x09, 0x22, 0x50, 0x0a, 0x0e, 0x41, 0x73, 0x6b, 0x50, 0x75, 0x74, 0x52, 0x65, 0x73,
+	0x70, 0x6f, 0x6e, 0x73, 0x65, 0x12, 0x0e, 0x0a, 0x06, 0x73, 0x74, 0x61, 0x74, 0x75, 0x73, 0x18,
+	0x03, 0x20, 0x02, 0x28, 0x05, 0x12, 0x10, 0x0a, 0x08, 0x64, 0x65, 0x73, 0x74, 0x41, 0x64, 0x64,
+	0x72, 0x18, 0x04, 0x20, 0x02, 0x28, 0x09, 0x12, 0x0f, 0x0a, 0x07, 0x64, 0x65, 0x73, 0x74, 0x44,
+	0x69, 0x72, 0x18, 0x05, 0x20, 0x02, 0x28, 0x09, 0x12, 0x0b, 0x0a, 0x03, 0x6d, 0x73, 0x67, 0x18,
+	0x06, 0x20, 0x01, 0x28, 0x09, 0x32, 0x4f, 0x0a, 0x06, 0x41, 0x73, 0x6b, 0x50, 0x75, 0x74, 0x12,
+	0x45, 0x0a, 0x06, 0x41, 0x73, 0x6b, 0x50, 0x75, 0x74, 0x12, 0x1b, 0x2e, 0x6d, 0x65, 0x74, 0x61,
+	0x73, 0x65, 0x72, 0x76, 0x65, 0x72, 0x70, 0x62, 0x2e, 0x41, 0x73, 0x6b, 0x50, 0x75, 0x74, 0x52,
+	0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x1a, 0x1c, 0x2e, 0x6d, 0x65, 0x74, 0x61, 0x73, 0x65, 0x72,
+	0x76, 0x65, 0x72, 0x70, 0x62, 0x2e, 0x41, 0x73, 0x6b, 0x50, 0x75, 0x74, 0x52, 0x65, 0x73, 0x70,
+	0x6f, 0x6e, 0x73, 0x65, 0x22, 0x00, 0x42, 0x0c, 0x5a, 0x0a, 0x2e, 0x3b, 0x73, 0x65, 0x72, 0x76,
+	0x65, 0x72, 0x70, 0x62,
 }
 
 var (
@@ -162,12 +200,12 @@ func file_metaServer_proto_rawDescGZIP() []byte {
 
 var file_metaServer_proto_msgTypes = make([]protoimpl.MessageInfo, 2)
 var file_metaServer_proto_goTypes = []interface{}{
-	(*PutRequest)(nil),  // 0: serverpb.PutRequest
-	(*PutResponse)(nil), // 1: serverpb.PutResponse
+	(*AskPutRequest)(nil),  // 0: metaserverpb.AskPutRequest
+	(*AskPutResponse)(nil), // 1: metaserverpb.AskPutResponse
 }
 var file_metaServer_proto_depIdxs = []int32{
-	0, // 0: serverpb.Put.Put:input_type -> serverpb.PutRequest
-	1, // 1: serverpb.Put.Put:output_type -> serverpb.PutResponse
+	0, // 0: metaserverpb.AskPut.AskPut:input_type -> metaserverpb.AskPutRequest
+	1, // 1: metaserverpb.AskPut.AskPut:output_type -> metaserverpb.AskPutResponse
 	1, // [1:2] is the sub-list for method output_type
 	0, // [0:1] is the sub-list for method input_type
 	0, // [0:0] is the sub-list for extension type_name
@@ -182,7 +220,7 @@ func file_metaServer_proto_init() {
 	}
 	if !protoimpl.UnsafeEnabled {
 		file_metaServer_proto_msgTypes[0].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*PutRequest); i {
+			switch v := v.(*AskPutRequest); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -194,7 +232,7 @@ func file_metaServer_proto_init() {
 			}
 		}
 		file_metaServer_proto_msgTypes[1].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*PutResponse); i {
+			switch v := v.(*AskPutResponse); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -234,72 +272,72 @@ var _ grpc.ClientConnInterface
 // is compatible with the grpc package it is being compiled against.
 const _ = grpc.SupportPackageIsVersion6
 
-// PutClient is the client API for Put service.
+// AskPutClient is the client API for AskPut service.
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://godoc.org/google.golang.org/grpc#ClientConn.NewStream.
-type PutClient interface {
-	Put(ctx context.Context, in *PutRequest, opts ...grpc.CallOption) (*PutResponse, error)
+type AskPutClient interface {
+	AskPut(ctx context.Context, in *AskPutRequest, opts ...grpc.CallOption) (*AskPutResponse, error)
 }
 
-type putClient struct {
+type askPutClient struct {
 	cc grpc.ClientConnInterface
 }
 
-func NewPutClient(cc grpc.ClientConnInterface) PutClient {
-	return &putClient{cc}
+func NewAskPutClient(cc grpc.ClientConnInterface) AskPutClient {
+	return &askPutClient{cc}
 }
 
-func (c *putClient) Put(ctx context.Context, in *PutRequest, opts ...grpc.CallOption) (*PutResponse, error) {
-	out := new(PutResponse)
-	err := c.cc.Invoke(ctx, "/serverpb.Put/Put", in, out, opts...)
+func (c *askPutClient) AskPut(ctx context.Context, in *AskPutRequest, opts ...grpc.CallOption) (*AskPutResponse, error) {
+	out := new(AskPutResponse)
+	err := c.cc.Invoke(ctx, "/metaserverpb.AskPut/AskPut", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-// PutServer is the server API for Put service.
-type PutServer interface {
-	Put(context.Context, *PutRequest) (*PutResponse, error)
+// AskPutServer is the server API for AskPut service.
+type AskPutServer interface {
+	AskPut(context.Context, *AskPutRequest) (*AskPutResponse, error)
 }
 
-// UnimplementedPutServer can be embedded to have forward compatible implementations.
-type UnimplementedPutServer struct {
+// UnimplementedAskPutServer can be embedded to have forward compatible implementations.
+type UnimplementedAskPutServer struct {
 }
 
-func (*UnimplementedPutServer) Put(context.Context, *PutRequest) (*PutResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method Put not implemented")
+func (*UnimplementedAskPutServer) AskPut(context.Context, *AskPutRequest) (*AskPutResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method AskPut not implemented")
 }
 
-func RegisterPutServer(s *grpc.Server, srv PutServer) {
-	s.RegisterService(&_Put_serviceDesc, srv)
+func RegisterAskPutServer(s *grpc.Server, srv AskPutServer) {
+	s.RegisterService(&_AskPut_serviceDesc, srv)
 }
 
-func _Put_Put_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(PutRequest)
+func _AskPut_AskPut_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(AskPutRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(PutServer).Put(ctx, in)
+		return srv.(AskPutServer).AskPut(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/serverpb.Put/Put",
+		FullMethod: "/metaserverpb.AskPut/AskPut",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(PutServer).Put(ctx, req.(*PutRequest))
+		return srv.(AskPutServer).AskPut(ctx, req.(*AskPutRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-var _Put_serviceDesc = grpc.ServiceDesc{
-	ServiceName: "serverpb.Put",
-	HandlerType: (*PutServer)(nil),
+var _AskPut_serviceDesc = grpc.ServiceDesc{
+	ServiceName: "metaserverpb.AskPut",
+	HandlerType: (*AskPutServer)(nil),
 	Methods: []grpc.MethodDesc{
 		{
-			MethodName: "Put",
-			Handler:    _Put_Put_Handler,
+			MethodName: "AskPut",
+			Handler:    _AskPut_AskPut_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
