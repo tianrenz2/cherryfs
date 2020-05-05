@@ -1,9 +1,8 @@
-package main
+package server
 
 import (
 	"cherryfs/pkg/meta/serverpb"
 	"log"
-	"cherryfs/pkg/meta"
 	"fmt"
 )
 
@@ -25,7 +24,9 @@ func AskPutTest() {
 	}
 }
 
-func main()  {
-	meta.Startup()
-	AskPutTest()
-}
+//func main()  {
+//	meta.Startup()
+//
+//
+//	//AskPutTest()
+//}

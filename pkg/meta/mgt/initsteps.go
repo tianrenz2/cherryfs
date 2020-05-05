@@ -5,23 +5,17 @@ import (
 	"log"
 	"encoding/json"
 	"cherryfs/pkg/roles/host"
-	"cherryfs/pkg/roles/dir"
 )
 
 const (
-	configPath = "../../../cluster_config.json"
+	configPath = "../../cluster_config.json"
 )
-
-type ConfigHost struct {
-	Hostname string
-	Address string
-	Dirs []string
-}
 
 type Config struct {
 	Subgroupnum int
-	Hosts []ConfigHost
+	Hosts []host.ConfigHost
 }
+
 
 func LoadConfig() Config {
 	data, err := ioutil.ReadFile(configPath)
@@ -38,12 +32,12 @@ func LoadConfig() Config {
 	return config
 }
 
-func LoadHosts(configHosts []ConfigHost) []host.Host {
+func LoadHosts(configHosts []host.ConfigHost) []host.Host {
 	var hosts = make([]host.Host, 0)
 	for _, configHost := range configHosts {
-		dirs := make([]dir.Dir, 0)
+		dirs := make([]string, 0)
 		for _, d := range configHost.Dirs {
-			dirs = append(dirs, dir.Dir {Path:d})
+			dirs = append(dirs, d)
 		}
 
 		hosts = append(hosts, host.Host{

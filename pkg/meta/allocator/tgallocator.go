@@ -1,7 +1,7 @@
 package allocator
 
 import (
-	"cherryfs/pkg/meta/subgrouper"
+	"cherryfs/pkg/meta/subgroup"
 	"cherryfs/pkg/roles/dir"
 	"cherryfs/pkg/roles/host"
 	"cherryfs/pkg/object"
@@ -18,7 +18,22 @@ type Target struct {
 	Dir dir.Dir
 }
 
-func (allocator *Allocator) AllocateTargetsFromSgs(subgroups []subgrouper.SubGroup, obj object.Object) ([]Target, error) {
+func (allocator *Allocator) AllocTargets(object object.Object) ([]Target, error) {
+	allocSgs, errSg := allocator.AllocSubgroups(object)
+	var targets = make([]Target,0)
+	
+	if errSg != nil {
+		return targets, errSg
+	}
+	targets, errTg := allocator.AllocateTargetsFromSgs(allocSgs, object)
+	if errTg != nil {
+		return targets, errTg
+	}
+
+	return targets, nil
+}
+
+func (allocator *Allocator) AllocateTargetsFromSgs(subgroups []subgroup.SubGroup, obj object.Object) ([]Target, error) {
 	var allocatedTgs = make([]Target, 0)
 	for _, subgroup := range subgroups {
 		target, err := allocator.AllocateTargetFromSg(subgroup, obj)
@@ -30,7 +45,7 @@ func (allocator *Allocator) AllocateTargetsFromSgs(subgroups []subgrouper.SubGro
 	return allocatedTgs, nil
 }
 
-func (allocator *Allocator) AllocateTargetFromSg(subgroup subgrouper.SubGroup, obj object.Object) (Target, error) {
+func (allocator *Allocator) AllocateTargetFromSg(subgroup subgroup.SubGroup, obj object.Object) (Target, error) {
 	var selectedHost interface{} = nil
 	var selectedDir interface{} = nil
 	var maxScore float64 = 0

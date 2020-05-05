@@ -1,17 +1,22 @@
 package allocator
 
 import (
-	"cherryfs/pkg/meta/subgrouper"
+	"cherryfs/pkg/meta/subgroup"
 	"crypto/sha256"
 	"encoding/binary"
 	"cherryfs/pkg/object"
 )
 
+/*
+	Responsible for allocating subgroups to an object, then from the each
+	selected subgroup, a target will be selected to place the object.
+*/
+
 type RedundancyPolicy int
 
 const (
 	ReplicaPolicy RedundancyPolicy = 1
-	ReplicNum int = 3
+	ReplicaNum    int              = 3
 )
 
 type Allocator struct {
@@ -19,22 +24,7 @@ type Allocator struct {
 
 }
 
-func (allocator *Allocator) AllocTargets(object object.Object) ([]Target, error) {
-	allocSgs, errSg := allocator.AllocSubgroups(object)
-	var targets = make([]Target,0)
-
-	if errSg != nil {
-		return targets, errSg
-	}
-	targets, errTg := allocator.AllocateTargetsFromSgs(allocSgs, object)
-	if errTg != nil {
-		return targets, errTg
-	}
-
-	return targets, nil
-}
-
-func (allocator *Allocator) AllocSubgroups(object object.Object) ([]subgrouper.SubGroup, error) {
+func (allocator *Allocator) AllocSubgroups(object object.Object) ([]subgroup.SubGroup, error) {
 	objName := object.Name
 	keyByte := []byte(objName)
 	h := sha256.New()
@@ -42,14 +32,14 @@ func (allocator *Allocator) AllocSubgroups(object object.Object) ([]subgrouper.S
 	bs := h.Sum(nil)
 	hashNum := binary.BigEndian.Uint64(bs)
 
-	subGroupNum := subgrouper.GlobalSubGroupManager.GetSubGroupNumber()
+	subGroupNum := subgroup.GlobalSubGroupManager.GetSubGroupNumber()
 
 	modStart := int(hashNum) % subGroupNum
 
-	var allocatedSubGroups = make([]subgrouper.SubGroup, 0)
+	var allocatedSubGroups = make([]subgroup.SubGroup, 0)
 
-	for i := 0; i < ReplicNum; i ++ {
-		allocatedSubGroups = append(allocatedSubGroups, subgrouper.GlobalSubGroupManager.GetSubGroupById(modStart))
+	for i := 0; i < ReplicaNum; i ++ {
+		allocatedSubGroups = append(allocatedSubGroups, subgroup.GlobalSubGroupManager.GetSubGroupById(modStart))
 		modStart += 1
 		modStart %= subGroupNum
 	}

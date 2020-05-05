@@ -1,4 +1,4 @@
-package subgrouper
+package subgroup
 
 func SubgroupHash(key, subgroupNum, stripe int) int {
 	//bitmask := key &

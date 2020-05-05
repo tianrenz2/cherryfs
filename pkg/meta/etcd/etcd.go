@@ -36,9 +36,24 @@ func (client *EtcdClient)CreateEtcdClient(addr string, port int) (err error) {
 	return
 }
 
-func (client *EtcdClient)Put(key, val string) (error) {
+func (client *EtcdClient) Put(key, val string) (error) {
 	_, err := client.client.Put(client.ctx, key, val)
 	return err
+}
+
+func (client *EtcdClient) GetWithPrefix(keyPrefix string) (map[string]string, error){
+
+	resp, err := client.client.Get(client.ctx, keyPrefix, clientv3.WithPrefix())
+
+	var res = make(map[string]string)
+	//fmt.Println(resp)
+	if err == nil{
+		//val := string(resp.Kvs)
+		for _, kv := range resp.Kvs {
+			res[string(kv.Key)] = string(kv.Value)
+		}
+	}
+	return res, nil
 }
 
 func (client *EtcdClient)Get(key string) (string, error) {
@@ -47,6 +62,8 @@ func (client *EtcdClient)Get(key string) (string, error) {
 	if err == nil{
 		val = string(resp.Kvs[0].Value)
 	}
+
+	fmt.Println(val)
 
 	return val, err
 }

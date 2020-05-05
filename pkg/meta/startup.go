@@ -1,39 +1,69 @@
-package meta
+package main
 
 import (
 	"cherryfs/pkg/meta/mgt"
-	"cherryfs/pkg/meta/subgrouper"
+	"cherryfs/pkg/roles/dir"
+	"cherryfs/pkg/roles/host"
+	"cherryfs/pkg/meta/subgroup"
 	"fmt"
-	rand2 "math/rand"
-	"log"
+	"cherryfs/pkg/meta/context"
 )
-
-var subgroupManager subgrouper.SubGroupManager = subgrouper.SubGroupManager{}
 
 func Startup()  {
 	clusterConfig := mgt.LoadConfig()
-	hosts := mgt.LoadHosts(clusterConfig.Hosts)
-	//subgroupManager.InitSubgroupSetup(hosts)
-	subgrouper.GlobalSubGroupManager.InitSubgroupSetup(hosts)
+	var dirManager dir.DirManager
+	var hostManager host.HostManager
 
+	hostManager.InitAllHosts(clusterConfig.Hosts, &dirManager)
 
-	var spaceLevels = [5]int64{10, 20, 30, 40, 50}
+	subgroup.GlobalSubGroupManager.InitSubgroupSetup(hostManager.Hosts)
 
-
-
-	for _, subgroup := range subgrouper.GlobalSubGroupManager.SubGroups {
-		for _, host := range subgroup.Hosts {
-			for index, _ := range host.Dirs {
-				sl := rand2.Int() % 5
-				host.Dirs[index].TotalSpace = spaceLevels[sl]
-				log.Printf("Dir %s has space %d\n", host.Dirs[index].Path, host.Dirs[index].TotalSpace)
+	for _, sg := range subgroup.GlobalSubGroupManager.SubGroups {
+		for _, hId := range sg.Hosts {
+			h, _ := hostManager.GetHostByHostId(hId)
+			for _, d := range h.Dirs {
+				dname, _ := dirManager.GetDirByDirId(d)
+				fmt.Println(dname)
 			}
 		}
-
 	}
 
+	ctx := context.Context{SGManager: subgroup.GlobalSubGroupManager, HManager:hostManager, DManager:dirManager}
+	ctx.EtcdCli.CreateEtcdClient("127.0.0.1", 2380)
+	err := ctx.PersistClusterConfig()
 
+	if err != nil {
+		fmt.Errorf("%v", err)
+	}
+	fmt.Printf("created cluster successfully")
+	//fmt.Println(subgroup.GlobalSubGroupManager.SubGroups)
+	//m, _ := json.Marshal(subgroup.GlobalSubGroupManager.SubGroups)
+	//g := base64.StdEncoding.EncodeToString(m)
 
-	fmt.Println(subgroupManager.SubGroups)
+	//fmt.Println(g)
+	//var b []byte
+	//b, _ = base64.StdEncoding.DecodeString(g)
+	//
+	//var s []subgroup.SubGroup
+	//json.Unmarshal(b, &s)
+	//fmt.Println(s)
+
 	//server.StartServer()
+}
+
+func LoadClusterConfig() {
+	ctx := context.Context{}
+	ctx.EtcdCli.CreateEtcdClient("127.0.0.1", 2380)
+	err := ctx.DecodeSubgroups()
+
+	if err != nil{
+		fmt.Errorf("%v", err)
+	}
+
+	fmt.Println(ctx.SGManager.SubGroups)
+}
+
+func main()  {
+	//Startup()
+	LoadClusterConfig()
 }

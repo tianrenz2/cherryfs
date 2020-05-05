@@ -1,11 +1,13 @@
 package dir
 
 type Dir struct {
-	Uuid string
-	Path string
+	DirId      string
+	Path       string
+	HostId     string
 	TotalSpace int64
-	UsedSpace int64
-	Manager DirManager
+	UsedSpace  int64
+	Manager    DirSubGroupManager
+
 }
 
 func (dir *Dir) GetBaseScore() float64 {

@@ -1,11 +1,11 @@
 package mgt
 
 import (
-	"cherryfs/pkg/meta/subgrouper"
+	"cherryfs/pkg/meta/subgroup"
 )
 
 type GlobalConfig struct {
 	SubGroupNum int
-	SubGroups []subgrouper.SubGroup
+	SubGroups []subgroup.SubGroup
 }
 
