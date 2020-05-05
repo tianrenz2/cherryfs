@@ -2,11 +2,12 @@ package etcd
 
 import (
 	"time"
-	"github.com/coreos/etcd/clientv3"
+	"go.etcd.io/etcd/clientv3"
 	"fmt"
 	"context"
 	"strconv"
 )
+
 
 type EtcdClient struct {
 	addr string
@@ -20,7 +21,6 @@ type EtcdClient struct {
 func (client *EtcdClient)CreateEtcdClient(addr string, port int) (err error) {
 
 	serviceAddr := fmt.Sprintf("http://%s:%s", addr, strconv.Itoa(port))
-	fmt.Println("using " + serviceAddr)
 	cfg := clientv3.Config{
 		Endpoints: []string{serviceAddr},
 		DialTimeout: 5 * time.Second,

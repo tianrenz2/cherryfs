@@ -1,4 +1,4 @@
-package main
+package meta
 
 import (
 	"cherryfs/pkg/meta/mgt"
@@ -6,64 +6,62 @@ import (
 	"cherryfs/pkg/roles/host"
 	"cherryfs/pkg/meta/subgroup"
 	"fmt"
-	"cherryfs/pkg/meta/context"
+	"cherryfs/pkg/context"
+	"math/rand"
 )
 
-func Startup()  {
+func Startup() (context.Context) {
+
+	var dirSpaces = []int64 {1, 5, 7, 10}
+
 	clusterConfig := mgt.LoadConfig()
 	var dirManager dir.DirManager
 	var hostManager host.HostManager
+	var GlobalSubGroupManager subgroup.SubGroupManager
 
 	hostManager.InitAllHosts(clusterConfig.Hosts, &dirManager)
+	ctx := context.Context{SGManager: &GlobalSubGroupManager, HManager:&hostManager, DManager:&dirManager}
 
-	subgroup.GlobalSubGroupManager.InitSubgroupSetup(hostManager.Hosts)
+	ctx.SGManager.InitSubgroupSetup(hostManager.Hosts)
 
-	for _, sg := range subgroup.GlobalSubGroupManager.SubGroups {
+	for _, sg := range ctx.SGManager.SubGroups {
 		for _, hId := range sg.Hosts {
 			h, _ := hostManager.GetHostByHostId(hId)
 			for _, d := range h.Dirs {
-				dname, _ := dirManager.GetDirByDirId(d)
-				fmt.Println(dname)
+				//dname, _ := (&dirManager).GetDirByDirId(d)
+				dirManager.UpdateDirSpaceByDirId(d, dirSpaces[rand.Int() % 4] * 1e6)
+				//fmt.Printf("updated space: %d, %d\n", d2.TotalSpace, dname.TotalSpace)
 			}
 		}
 	}
 
-	ctx := context.Context{SGManager: subgroup.GlobalSubGroupManager, HManager:hostManager, DManager:dirManager}
+
+	//fmt.Println(ctx.HManager.Hosts)
 	ctx.EtcdCli.CreateEtcdClient("127.0.0.1", 2380)
-	err := ctx.PersistClusterConfig()
+	err := ctx.PersistCluster()
 
 	if err != nil {
 		fmt.Errorf("%v", err)
 	}
 	fmt.Printf("created cluster successfully")
-	//fmt.Println(subgroup.GlobalSubGroupManager.SubGroups)
-	//m, _ := json.Marshal(subgroup.GlobalSubGroupManager.SubGroups)
-	//g := base64.StdEncoding.EncodeToString(m)
 
-	//fmt.Println(g)
-	//var b []byte
-	//b, _ = base64.StdEncoding.DecodeString(g)
-	//
-	//var s []subgroup.SubGroup
-	//json.Unmarshal(b, &s)
-	//fmt.Println(s)
-
-	//server.StartServer()
+	return ctx
 }
 
-func LoadClusterConfig() {
+func LoadClusterConfig() (context.Context) {
 	ctx := context.Context{}
+	ctx.InitManagers()
 	ctx.EtcdCli.CreateEtcdClient("127.0.0.1", 2380)
-	err := ctx.DecodeSubgroups()
+	err := ctx.RecoverCluster()
 
 	if err != nil{
 		fmt.Errorf("%v", err)
 	}
 
-	fmt.Println(ctx.SGManager.SubGroups)
+	return ctx
 }
 
 func main()  {
-	//Startup()
-	LoadClusterConfig()
+	Startup()
+	//LoadClusterConfig()
 }

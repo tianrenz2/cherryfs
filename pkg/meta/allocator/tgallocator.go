@@ -35,8 +35,8 @@ func (allocator *Allocator) AllocTargets(object object.Object) ([]Target, error)
 
 func (allocator *Allocator) AllocateTargetsFromSgs(subgroups []subgroup.SubGroup, obj object.Object) ([]Target, error) {
 	var allocatedTgs = make([]Target, 0)
-	for _, subgroup := range subgroups {
-		target, err := allocator.AllocateTargetFromSg(subgroup, obj)
+	for _, sg := range subgroups {
+		target, err := allocator.AllocateTargetFromSg(sg, obj)
 		if err != nil{
 			return allocatedTgs, err
 		}
@@ -46,29 +46,46 @@ func (allocator *Allocator) AllocateTargetsFromSgs(subgroups []subgroup.SubGroup
 }
 
 func (allocator *Allocator) AllocateTargetFromSg(subgroup subgroup.SubGroup, obj object.Object) (Target, error) {
-	var selectedHost interface{} = nil
-	var selectedDir interface{} = nil
+	var selectedHostId interface{} = nil
+	var selectedDirId interface{} = nil
 	var maxScore float64 = 0
 
 	target := Target{}
 
-	for _, h := range subgroup.Hosts {
-		for _, d := range h.Dirs {
+	for _, hId := range subgroup.Hosts {
+		h, err := allocator.Ctx.HManager.GetHostByHostId(hId)
+		if err != nil {
+			return Target{}, fmt.Errorf("%v", err)
+		}
+
+		for _, dId := range h.Dirs {
+			var d, err = allocator.Ctx.DManager.GetDirByDirId(dId)
+			if err != nil {
+				return Target{}, fmt.Errorf("%v", err)
+			}
 			baseScore := d.GetBaseScore()
 			multiplier := d.TotalSpace - d.UsedSpace - obj.Size
 			score := baseScore * float64(multiplier)
 			if score > maxScore {
 				maxScore = score
-				selectedHost = h
-				selectedDir = d
+				selectedHostId = hId
+				selectedDirId = dId
 			}
 		}
 	}
-	if selectedHost == nil || selectedDir == nil {
-		return target, fmt.Errorf("Did not find qualified dir in subgroup %d", subgroup.SubGroupId)
+	if selectedHostId == nil || selectedDirId == nil {
+		return target, fmt.Errorf("did not find qualified dir in subgroup %d", subgroup.SubGroupId)
 	}
 
-	target.Host = selectedHost.(host.Host)
-	target.Dir = selectedDir.(dir.Dir)
+	selectedHost, err := allocator.Ctx.HManager.GetHostByHostId(fmt.Sprintf("%v", selectedHostId))
+
+	selectedDir, err := allocator.Ctx.DManager.GetDirByDirId(fmt.Sprintf("%v", selectedDirId))
+
+	if err != nil {
+		return Target{}, fmt.Errorf("%v", err)
+	}
+	target.Host = selectedHost
+	target.Dir = selectedDir
+
 	return target, nil
 }

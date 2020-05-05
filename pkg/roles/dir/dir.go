@@ -16,3 +16,14 @@ func (dir *Dir) GetBaseScore() float64 {
 	denominator := float64(dir.UsedSpace + reliefNum) / float64(dir.TotalSpace + reliefNum)
 	return float64(numerator / denominator)
 }
+
+func (dir *Dir) UpdateTotalSpace(space int64)  {
+	dir.TotalSpace = space
+}
+
+//func (dir *Dir) UpdateField(newFields interface{})  {
+//	entityType := reflect.TypeOf(newFields).Elem()
+//	for i := 0; i < entityType.NumField(); i++ {
+//
+//	}
+//}

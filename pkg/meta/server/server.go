@@ -4,9 +4,11 @@ import (
 	"net"
 	"log"
 	"google.golang.org/grpc"
-	pb "cherryfs/pkg/meta/serverpb"
+	pb "cherryfs/pkg/meta/server/serverpb"
 	"cherryfs/pkg/meta/allocator"
 	"cherryfs/pkg/object"
+	"cherryfs/pkg/context"
+	"cherryfs/pkg/meta"
 )
 
 const (
@@ -19,11 +21,15 @@ type server struct {
 	pb.UnimplementedAskPutServer
 }
 
+var GlobalCtx context.Context
+
 func StartServer()  {
 	lis, err := net.Listen("tcp", port)
 	if err != nil {
 		log.Fatalf("Failed to listen: %v", err)
 	}
+
+	GlobalCtx = meta.Startup()
 
 	s := grpc.NewServer()
 	pb.RegisterAskPutServer(s, &server{})
@@ -39,7 +45,7 @@ func AskPut(askPutReq *pb.AskPutRequest) ([]allocator.Target, error) {
 
 	obj := object.Object{Name:objName, Size:int64(objSize), Hash:objHash}
 
-	alloc := allocator.Allocator{Policy: allocator.ReplicaPolicy}
+	alloc := allocator.Allocator{Policy: allocator.ReplicaPolicy, Ctx: GlobalCtx}
 
 	var targets []allocator.Target
 	targets, err := alloc.AllocTargets(obj)

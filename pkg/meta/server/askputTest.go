@@ -1,9 +1,10 @@
-package server
+package main
 
 import (
-	"cherryfs/pkg/meta/serverpb"
 	"log"
 	"fmt"
+	"cherryfs/pkg/meta/server/serverpb"
+	"cherryfs/pkg/meta"
 )
 
 func AskPutTest() {
@@ -24,9 +25,8 @@ func AskPutTest() {
 	}
 }
 
-//func main()  {
-//	meta.Startup()
-//
-//
-//	//AskPutTest()
-//}
+func main()  {
+	//GlobalCtx = meta.Startup()
+	GlobalCtx = meta.LoadClusterConfig()
+	AskPutTest()
+}

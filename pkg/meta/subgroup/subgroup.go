@@ -23,9 +23,7 @@ type SubGroupManager struct {
 	SubGroups []SubGroup
 }
 
-var GlobalSubGroupManager SubGroupManager
-
-func (subGroupMg *SubGroupManager) InitSubgroupSetup(allHosts []host.Host) (error) {
+func (subGroupMg *SubGroupManager) InitSubgroupSetup(allHosts []*host.Host) (error) {
 
 	subgroups, err := subGroupMg.InitSubgroups(allHosts)
 	if err != nil{
@@ -43,7 +41,7 @@ func (subGroupMg *SubGroupManager) GetSubGroupById(SubgroupId int) SubGroup {
 	return subGroupMg.SubGroups[SubgroupId]
 }
 
-func (subGroupMg *SubGroupManager)InitSubgroups(allHosts []host.Host) ([]SubGroup, error){
+func (subGroupMg *SubGroupManager)InitSubgroups(allHosts []*host.Host) ([]SubGroup, error){
 	var subgroupNum = 0
 	hostNum := len(allHosts)
 
@@ -70,7 +68,7 @@ func (subGroupMg *SubGroupManager)InitSubgroups(allHosts []host.Host) ([]SubGrou
 	return subgroups, nil
 }
 
-func (subGroupMg *SubGroupManager) InitOneSubgroup(allHosts []host.Host, groupIndex, groupStart, groupEnd int) (SubGroup, error) {
+func (subGroupMg *SubGroupManager) InitOneSubgroup(allHosts []*host.Host, groupIndex, groupStart, groupEnd int) (SubGroup, error) {
 	var subgroup = SubGroup{Hosts: make([]string, 0), SubGroupId:groupIndex}
 	subgroup.DManager = dir.DirSubGroupManager{ReliefNum: dir.DefaultReliefNum}
 
