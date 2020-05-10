@@ -8,7 +8,7 @@ import (
 )
 
 const (
-	configPath = "../../../cluster_config.json"
+	configPath = "/root/go/src/cherryfs/cluster_config.json"
 )
 
 type Config struct {

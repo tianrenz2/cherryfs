@@ -1,14 +1,30 @@
 package object
 
 import (
-	"cherryfs/pkg/roles/dir"
-	"cherryfs/pkg/roles/host"
+	"bytes"
+	"os"
+	"path"
+	"fmt"
 )
 
-type Object struct {
+type LocalObject struct {
 	Name string
 	Size int64
 	Hash string
-	dir dir.Dir
-	host host.Host
+	Path string
+}
+
+func (lcObject *LocalObject) ObjectStore(data bytes.Buffer) (error) {
+	file, err := os.Create(path.Join(lcObject.Path, lcObject.Name))
+
+	if err != nil {
+		return fmt.Errorf("%v", err)
+	}
+
+	_, err = data.WriteTo(file)
+
+	if err != nil {
+		return fmt.Errorf("%v", err)
+	}
+	return nil
 }

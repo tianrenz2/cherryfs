@@ -35,8 +35,6 @@ func Startup() (context.Context) {
 		}
 	}
 
-
-	//fmt.Println(ctx.HManager.Hosts)
 	ctx.EtcdCli.CreateEtcdClient("127.0.0.1", 2380)
 	err := ctx.PersistCluster()
 
