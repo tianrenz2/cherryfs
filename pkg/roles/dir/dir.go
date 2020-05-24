@@ -6,7 +6,7 @@ type Dir struct {
 	HostId     string
 	TotalSpace int64
 	UsedSpace  int64
-	Manager    DirSubGroupManager
+	Manager    DirSubGroupSetting
 
 }
 

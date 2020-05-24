@@ -1,15 +1,16 @@
-package main
+package server
 
 import (
 	"net"
 	"log"
 	"google.golang.org/grpc"
-	pb "cherryfs/pkg/meta/server/serverpb"
+	pb "cherryfs/pkg/comm/pb"
 	"cherryfs/pkg/meta/allocator"
 	"cherryfs/pkg/object"
 	cherryCtx "cherryfs/pkg/context"
 	"context"
-	"cherryfs/pkg/meta"
+	"cherryfs/pkg/meta/initialize"
+	"fmt"
 )
 
 const (
@@ -18,31 +19,33 @@ const (
 	defaultName = "metaServer"
 )
 
-type server struct {
-	pb.UnimplementedAskPutServer
+type MetaServer struct {
+	pb.MetaServiceServer
 }
 
 var GlobalCtx cherryCtx.Context
 
 func StartServer()  {
-	lis, err := net.Listen("tcp", port)
+	lis, err := net.Listen("tcp", "127.0.0.1:50051")
 	if err != nil {
 		log.Fatalf("Failed to listen: %v", err)
 	}
 
-	GlobalCtx = meta.LoadClusterConfig()
+	GlobalCtx = initialize.Startup()
+
+	fmt.Println("\n" + lis.Addr().String())
 
 	s := grpc.NewServer()
-	pb.RegisterAskPutServer(s, &server{})
+	pb.RegisterMetaServiceServer(s, &MetaServer{})
 	if err := s.Serve(lis); err != nil {
 		log.Fatalf("Failed to serve: %v", err)
 	}
 }
 
-func (s *server)AskPut(ctx context.Context, askPutReq *pb.AskPutRequest) (*pb.AskPutResponse, error) {
-	objName := *askPutReq.Name
-	objSize := *askPutReq.Size
-	objHash := *askPutReq.ObjectHash
+func (s *MetaServer)AskPut(ctx context.Context, askPutReq *pb.AskPutRequest) (*pb.AskPutResponse, error) {
+	objName := askPutReq.Name
+	objSize := askPutReq.Size
+	objHash := askPutReq.ObjectHash
 
 	obj := object.Object{Name:objName, Size:int64(objSize), Hash:objHash}
 
@@ -56,12 +59,12 @@ func (s *server)AskPut(ctx context.Context, askPutReq *pb.AskPutRequest) (*pb.As
 
 	var status = int32(0)
 
-	respTargets := make([]*pb.Habitat, 0)
+	respTargets := make([]*pb.Target, 0)
 	for _, target := range targets {
-		respTargets = append(respTargets, &pb.Habitat{DestAddr: &target.Host.Address, DestDir:&target.Dir.Path})
+		respTargets = append(respTargets, &pb.Target{DestAddr: target.Host.Address, DestDir:target.Dir.Path, DestId:target.Host.HostId})
 	}
 
-	var resp = pb.AskPutResponse{Status:&status, Targets:respTargets}
+	var resp = pb.AskPutResponse{Status:status, Targets:respTargets}
 
 	return &resp, nil
 }

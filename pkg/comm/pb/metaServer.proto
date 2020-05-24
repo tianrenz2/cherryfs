@@ -1,0 +1,38 @@
+syntax = "proto3";
+package pb;
+
+option go_package = ".;pb";
+
+service MetaService {
+    rpc AskPut (AskPutRequest) returns (AskPutResponse) {}
+}
+
+message Target {
+    string destAddr = 1;
+    string destDir = 2;
+    string destId = 3;
+}
+
+
+message AskPutRequest {
+    string name = 1;
+    int64 size = 2;
+    string object = 3;
+    string objectHash = 4;
+}
+
+message AskPutResponse {
+    int32 status = 1;
+    repeated Target targets = 2;
+    string msg = 4;
+}
+
+message AskGetRequest {
+    string name = 1;
+}
+
+message AskGetResponse {
+    int32 status = 1;
+    Target target = 2;
+    string msg = 3;
+}

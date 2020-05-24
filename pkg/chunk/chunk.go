@@ -1,20 +1,20 @@
 package chunk
 
 import (
-	"cherryfs/pkg/chunk/chunkserverpb"
 	"google.golang.org/grpc"
 	"bytes"
 	"fmt"
 	"context"
+	pb "cherryfs/pkg/comm/pb"
 )
 
 type ChunkContext struct {
 	Address string
-	Client  chunkserverpb.PutClient
+	Client  pb.PutClient
 }
 
-func (chunkCtx *ChunkContext) SendAsRec(writing *bool, buffer *bytes.Buffer, info *chunkserverpb.ObjectInfo, targets []*chunkserverpb.Target) (error) {
-	var newTargets = make([]*chunkserverpb.Target, 0)
+func (chunkCtx *ChunkContext) SendAsRec(writing *bool, buffer *bytes.Buffer, info *pb.ObjectInfo, targets []*pb.Target) (error) {
+	var newTargets = make([]*pb.Target, 0)
 	for _, target := range targets {
 		if target.DestAddr == chunkCtx.Address {
 			continue
@@ -29,7 +29,7 @@ func (chunkCtx *ChunkContext) SendAsRec(writing *bool, buffer *bytes.Buffer, inf
 	nextAddr := newTargets[0].DestAddr
 
 	conn, _ := grpc.Dial(nextAddr, grpc.WithInsecure(), grpc.WithBlock())
-	chunkCtx.Client = chunkserverpb.NewPutClient(conn)
+	chunkCtx.Client = pb.NewPutClient(conn)
 
 	stream, err := chunkCtx.Client.PutObject(context.Background())
 
@@ -39,12 +39,11 @@ func (chunkCtx *ChunkContext) SendAsRec(writing *bool, buffer *bytes.Buffer, inf
 
 	// Filter out itself
 	info.Targets = newTargets
-	pr := chunkserverpb.PutRequest{
-		Data: &chunkserverpb.PutRequest_Info{
+	pr := pb.PutRequest{
+		Data: &pb.PutRequest_Info{
 			Info: info,
 		},
 	}
-	fmt.Printf("Send to %s\n", nextAddr)
 	err = stream.Send(&pr)
 
 	if err != nil {
@@ -57,18 +56,15 @@ func (chunkCtx *ChunkContext) SendAsRec(writing *bool, buffer *bytes.Buffer, inf
 		if (*buffer).Len() > lastReadLen {
 			sendBuf := make([]byte, buffer.Len() - lastReadLen)
 			(*buffer).Read(sendBuf)
-			//fmt.Printf("Read: %s, %d, %v", string(sendBuf), n, err)
 			lastReadLen = (*buffer).Len()
-			fmt.Printf("transfering: %v\n", string(sendBuf))
 			err = stream.Send(
-				&chunkserverpb.PutRequest{
-					Data: &chunkserverpb.PutRequest_Content{
+				&pb.PutRequest{
+					Data: &pb.PutRequest_Content{
 						Content: sendBuf,
 					},
 				},
 			)
 			if err != nil {
-				fmt.Printf("Error: %v\n", err)
 				err = fmt.Errorf("failed to send chunk via stream: %v", err)
 				return err
 			}
@@ -79,9 +75,8 @@ func (chunkCtx *ChunkContext) SendAsRec(writing *bool, buffer *bytes.Buffer, inf
 		}
 	}
 
-	ret, e := stream.CloseAndRecv()
+	_, e := stream.CloseAndRecv()
 
-	fmt.Printf("Response: %v\n", ret)
 	if e != nil {
 		return e
 	}

@@ -2,6 +2,7 @@ package host
 
 import (
 	"fmt"
+	"github.com/google/uuid"
 	"cherryfs/pkg/roles/dir"
 )
 

@@ -1,7 +1,7 @@
 package main
 
 import (
-	pb "cherryfs/pkg/chunk/chunkserverpb"
+	"cherryfs/pkg/comm/pb"
 	"google.golang.org/grpc"
 	"net"
 	"log"
@@ -11,6 +11,8 @@ import (
 	"cherryfs/pkg/object"
 	"cherryfs/pkg/chunk"
 	"os"
+	"cherryfs/pkg/context"
+	"cherryfs/pkg/etcd"
 )
 
 type server struct {
@@ -21,16 +23,20 @@ var chunkCtx = chunk.ChunkContext{}
 var address	= ""
 
 
-func StartServer()  {
-	port := os.Getenv("PORT")
+var chunkContext context.Context
 
-	lis, err := net.Listen("tcp", ":" + port)
+func StartServer()  {
+	chunkContext = initContext()
+
+	address = os.Getenv("ADDR")
+	port := os.Getenv("PORT")
+	chunkCtx.Address = address + ":" + port
+
+	lis, err := net.Listen("tcp", chunkCtx.Address)
 	if err != nil {
 		log.Fatalf("Failed to listen: %v", err)
 	}
 
-	address = os.Getenv("ADDR")
-	chunkCtx.Address = address + ":" +port
 	fmt.Printf("Server Address: %s\n", chunkCtx.Address)
 
 	s := grpc.NewServer()
@@ -39,6 +45,8 @@ func StartServer()  {
 		log.Fatalf("Failed to serve: %v", err)
 	}
 }
+
+
 
 func (s *server) PutObject(stream pb.Put_PutObjectServer) (error) {
 	info, err := stream.Recv()
@@ -53,6 +61,7 @@ func (s *server) PutObject(stream pb.Put_PutObjectServer) (error) {
 	fmt.Printf("Received: %s\n", name)
 
 	data := bytes.Buffer{}
+
 	var writing = true
 	go chunkCtx.SendAsRec(&writing, &data, info.GetInfo(), targets)
 	for {
@@ -69,21 +78,60 @@ func (s *server) PutObject(stream pb.Put_PutObjectServer) (error) {
 			data.Write(recChunk.GetContent())
 		}
 	}
-	fmt.Println(data.String())
 	writing = false
+
+	var selfTarget *pb.Target
+	for _, target := range targets {
+		if target.DestAddr == chunkCtx.Address {
+			selfTarget = target
+		}
+	}
+
+	if selfTarget != nil {
+		fmt.Printf("Writing to %s\n", selfTarget.DestDir)
+		lcObject := object.LocalObject{Name:name, Size: 10, Hash: hash, Path:selfTarget.DestDir}
+		err = lcObject.ObjectStore(data)
+		if err == nil{
+			err = lcObject.PostStore(chunkContext)
+		}
+	}
+	var msg = "Success"
+	var code = 0
+
+	if err != nil {
+		msg = err.Error()
+		code = 1
+	}
+
 	err = stream.SendAndClose(&pb.PutResponse{
-		Message: "Success",
-		Code:   0,
+		Message: msg,
+		Code:   int32(code),
 	})
 
-	lcObject := object.LocalObject{Name:name, Size: 10, Hash: hash, Path:targets[0].DestDir}
-
-	lcObject.ObjectStore(data)
-
 	return err
+}
+
+func initContext() context.Context {
+
+	var etcdClient etcd.EtcdClient
+
+	etcdClient.CreateEtcdClient(os.Getenv("ETCD_ADDR"))
+
+	newCtx := context.Context{
+		EtcdCli: etcdClient,
+		HostId: os.Getenv("ADDR"),
+	}
+
+	return newCtx
 }
 
 
 func main()  {
 	StartServer()
+}
+
+func testPut() {
+	lcobj := object.LocalObject{Name: "abc"}
+	err := lcobj.PostStore(chunkContext)
+	fmt.Println(err)
 }

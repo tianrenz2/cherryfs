@@ -1,4 +1,4 @@
-package mgt
+package initialize
 
 import (
 	"io/ioutil"

@@ -1,7 +1,7 @@
 package main
 
 import (
-	"cherryfs/pkg/chunk/chunkserverpb"
+	"cherryfs/pkg/comm/pb"
 	"context"
 	"fmt"
 	"google.golang.org/grpc"
@@ -10,34 +10,33 @@ import (
 )
 
 type PutClientIns struct {
-	client chunkserverpb.PutClient
+	client pb.PutClient
 }
 
-func (c *PutClientIns) UploadObject(ctx context.Context, f string) (chunkserverpb.PutResponse, error) {
+func (c *PutClientIns) UploadObject(ctx context.Context, f string) (pb.PutResponse, error) {
 
 	objName := "objname1"
 	writing := true
 	file, err := os.Open(f)
 
 	stream, err := c.client.PutObject(ctx)
-	targets := []*chunkserverpb.Target{
-		{DestDir:"/tmp/cherryfs1", DestAddr:"192.168.30.3:50010"},
-		{DestDir:"/tmp/cherryfs1", DestAddr:"192.168.30.4:50011"},
+	targets := []*pb.Target{
+		{DestDir:"/tmp/cherryfs3", DestAddr:"192.168.30.2:5001"},
 	}
 
 	for i := 0; i < 3; i++ {
 		targets = append(targets, )
 	}
 
-	objInfo := chunkserverpb.ObjectInfo{Targets:targets, Name:objName, Hash: "randomhash"}
+	objInfo := pb.ObjectInfo{Targets:targets, Name:objName, Hash: "randomhash"}
 
 	err = stream.Send(
-		&chunkserverpb.PutRequest{
-			Data: &chunkserverpb.PutRequest_Info{Info: &objInfo},
+		&pb.PutRequest{
+			Data: &pb.PutRequest_Info{Info: &objInfo},
 		})
 
 	if err != nil {
-		return chunkserverpb.PutResponse{}, err
+		return pb.PutResponse{}, err
 	}
 	buf := make([]byte, 1024)
 	for writing {
@@ -53,8 +52,8 @@ func (c *PutClientIns) UploadObject(ctx context.Context, f string) (chunkserverp
 		}
 		fmt.Println(string(buf[:n]))
 		err = stream.Send(
-			&chunkserverpb.PutRequest{
-				Data: &chunkserverpb.PutRequest_Content{
+			&pb.PutRequest{
+				Data: &pb.PutRequest_Content{
 					Content: buf[:n],
 				},
 			},
@@ -62,14 +61,14 @@ func (c *PutClientIns) UploadObject(ctx context.Context, f string) (chunkserverp
 
 		if err != nil {
 			err = fmt.Errorf("failed to send chunk via stream: %v", err)
-			return chunkserverpb.PutResponse{}, err
+			return pb.PutResponse{}, err
 		}
 	}
 
 	ret, e := stream.CloseAndRecv()
 
 	if e != nil {
-		return chunkserverpb.PutResponse{}, e
+		return pb.PutResponse{}, e
 	}
 
 	return *ret, err
@@ -81,7 +80,7 @@ func main()  {
 	req_addr := os.Args[1]
 
 	conn, _ := grpc.Dial(req_addr, grpc.WithInsecure(), grpc.WithBlock())
-	client.client = chunkserverpb.NewPutClient(conn)
+	client.client = pb.NewPutClient(conn)
 
 	file := "t.txt"
 

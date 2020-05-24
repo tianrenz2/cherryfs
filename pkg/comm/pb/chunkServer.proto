@@ -1,16 +1,18 @@
 syntax = "proto3";
-package chunkserverpb;
+package pb;
 
-option go_package = ".;chunkserverpb";
+option go_package = ".;pb";
 
+import "metaServer.proto";
 
 service Put {
     rpc PutObject(stream PutRequest) returns (PutResponse) {}
 }
 
-message Target {
-    string destAddr = 1;
-    string destDir = 2;
+message ObjectInfo {
+    repeated pb.Target targets = 1;
+    string name = 2;
+    string hash = 3;
 }
 
 message PutRequest {
@@ -18,12 +20,6 @@ message PutRequest {
         ObjectInfo info = 1;
         bytes content = 2;
     }
-}
-
-message ObjectInfo {
-    repeated Target targets = 1;
-    string name = 2;
-    string hash = 3;
 }
 
 message PutResponse {

@@ -42,6 +42,10 @@ func (allocator *Allocator) AllocSubgroups(object object.Object) ([]subgroup.Sub
 
 	modStart := int(hashNum) % subGroupNum
 
+	if modStart < 0 {
+		modStart = -modStart
+	}
+
 	var allocatedSubGroups = make([]subgroup.SubGroup, 0)
 
 	for i := 0; i < ReplicaNum; i ++ {

@@ -3,41 +3,29 @@
   "hosts": [
     {
       "hostname": "host1",
-      "address": "192.168.0.1:50010",
+      "address": "192.168.30.2:50010",
+      "role": "master",
       "dirs": [
-        "/var/lib/zbs/meta",
-        "/var/lib/zbs/mata"
+        "/tmp/cherryfs/2",
+        "/tmp/cherryfs/5"
       ]
     },
     {
       "hostname": "host2",
-      "address": "192.168.0.2:50010",
+      "role": "storage",
+      "address": "192.168.30.3:50011",
       "dirs": [
-        "/var/lib/zbs/meta2"
+        "/tmp/cherryfs/3",
+        "/tmp/cherryfs/6"
       ]
     },
     {
       "hostname": "host3",
-      "address": "192.168.0.3:50010",
+      "role": "storage",
+      "address": "192.168.30.4:50012",
       "dirs": [
-        "/var/lib/zbs/meta",
-        "/var/lib/zbs/mata"
-      ]
-    },
-    {
-      "hostname": "host4",
-      "address": "192.168.0.5:50010",
-      "dirs": [
-        "/var/lib/zbs/meta",
-        "/var/lib/zbs/mata"
-      ]
-    },
-    {
-      "hostname": "host6",
-      "address": "192.168.0.6:50010",
-      "dirs": [
-        "/var/lib/zbs/fsd",
-        "/var/lib/zbs/vvv"
+        "/tmp/cherryfs/4",
+        "/tmp/cherryfs/7"
       ]
     }
   ]

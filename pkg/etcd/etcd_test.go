@@ -8,7 +8,7 @@ import (
 
 func Test_PutGetPrefix(t *testing.T) {
 	client := EtcdClient{}
-	e := client.CreateEtcdClient("127.0.0.1", 2380)
+	e := client.CreateEtcdClient("127.0.0.1:2380")
 
 	var prefix = "test_key"
 
@@ -47,7 +47,7 @@ func Test_PutGetPrefix(t *testing.T) {
 
 func Test_PutGet(t *testing.T)  {
 	client := EtcdClient{}
-	e := client.CreateEtcdClient("127.0.0.1", 2380)
+	e := client.CreateEtcdClient("127.0.0.1:2380")
 
 	if e != nil {
 		t.Error("Create Client: not passed")

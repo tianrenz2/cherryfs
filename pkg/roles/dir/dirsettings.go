@@ -5,7 +5,7 @@ const (
 )
 
 
-type DirSubGroupManager struct {
+type DirSubGroupSetting struct {
 	SubGroupId int
 	ReliefNum int
 }

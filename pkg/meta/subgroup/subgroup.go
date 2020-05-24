@@ -16,7 +16,7 @@ import (
 type SubGroup struct {
 	SubGroupId int
 	Hosts []string
-	DManager dir.DirSubGroupManager
+	DManager dir.DirSubGroupSetting
 }
 
 type SubGroupManager struct {
@@ -27,7 +27,7 @@ func (subGroupMg *SubGroupManager) InitSubgroupSetup(allHosts []*host.Host) (err
 
 	subgroups, err := subGroupMg.InitSubgroups(allHosts)
 	if err != nil{
-		return fmt.Errorf("failed to init subgroups: %v", err)
+		return fmt.Errorf("failed to initialize subgroups: %v", err)
 	}
 	subGroupMg.SubGroups = subgroups
 	return nil
@@ -45,21 +45,21 @@ func (subGroupMg *SubGroupManager)InitSubgroups(allHosts []*host.Host) ([]SubGro
 	var subgroupNum = 0
 	hostNum := len(allHosts)
 
-	if config.MinReplicaNum > hostNum {
+	if hostNum <= config.MinReplicaNum {
 		subgroupNum = len(allHosts)
 	} else {
 		subgroupNum = config.MinReplicaNum
 	}
 
 	var subgroups = make([]SubGroup, 0)
-	numPerGroup := hostNum / subgroupNum + 1
+	numPerGroup := hostNum / subgroupNum
 
 	for groupIndex :=0; groupIndex < subgroupNum; groupIndex++ {
 		groupStart := groupIndex * numPerGroup
 		groupEnd := groupStart + numPerGroup
 		subgroup, err := subGroupMg.InitOneSubgroup(allHosts, groupIndex, groupStart, groupEnd)
 		if err != nil {
-			return subgroups, fmt.Errorf("failed to init subgroups: %v", err)
+			return subgroups, fmt.Errorf("failed to initialize subgroups: %v", err)
 		}
 
 		subgroups = append(subgroups, subgroup)
@@ -70,7 +70,7 @@ func (subGroupMg *SubGroupManager)InitSubgroups(allHosts []*host.Host) ([]SubGro
 
 func (subGroupMg *SubGroupManager) InitOneSubgroup(allHosts []*host.Host, groupIndex, groupStart, groupEnd int) (SubGroup, error) {
 	var subgroup = SubGroup{Hosts: make([]string, 0), SubGroupId:groupIndex}
-	subgroup.DManager = dir.DirSubGroupManager{ReliefNum: dir.DefaultReliefNum}
+	subgroup.DManager = dir.DirSubGroupSetting{ReliefNum: dir.DefaultReliefNum}
 
 	if groupEnd > len(allHosts) {
 		groupEnd = len(allHosts)

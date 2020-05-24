@@ -5,34 +5,32 @@ import (
 	"go.etcd.io/etcd/clientv3"
 	"fmt"
 	"context"
-	"strconv"
 )
 
 
 type EtcdClient struct {
 	addr string
-	port int
 	client *clientv3.Client
 	cfg clientv3.Config
 	ctx context.Context
 	timeout time.Duration
 }
 
-func (client *EtcdClient)CreateEtcdClient(addr string, port int) (err error) {
+func (client *EtcdClient)CreateEtcdClient(addr string) (err error) {
 
-	serviceAddr := fmt.Sprintf("http://%s:%s", addr, strconv.Itoa(port))
+	serviceAddr := fmt.Sprintf("http://%s", addr)
 	cfg := clientv3.Config{
 		Endpoints: []string{serviceAddr},
 		DialTimeout: 5 * time.Second,
 	}
 
 	client.addr = addr
-	client.port = port
 	client.cfg = cfg
 	client.client, err = clientv3.New(cfg)
-	client.timeout = time.Second
+	client.timeout = 5 * time.Second
 	ctx, _ := context.WithTimeout(context.Background(), client.timeout)
 	client.ctx = ctx
+
 	return
 }
 
@@ -68,32 +66,26 @@ func (client *EtcdClient)Get(key string) (string, error) {
 	return val, err
 }
 
+func (client *EtcdClient)AmILeader() (bool) {
+	myEndpoint := client.client.Endpoints()[0]
+	status, _ := client.client.Status(client.ctx, myEndpoint)
+	return (*status).Header.MemberId == (*status).Leader
+}
+
 func main()  {
-	cfg := clientv3.Config{
-		Endpoints: []string{"http://127.0.0.1:2380"},
-		DialTimeout: 5 * time.Second,
-	}
-	cli, err := clientv3.New(cfg)
+	//cfg := clientv3.Config{
+	//	Endpoints: []string{"http://127.0.0.1:22379"},
+	//	DialTimeout: 5 * time.Second,
+	//}
+	//cli, err := clientv3.New(cfg)
+	//
+	//if err != nil {
+	//	fmt.Println("Failed to create client: " + err.Error())
+	//}
 
-	if err != nil {
-		fmt.Println("Failed to create client: " + err.Error())
-	}
+	var client EtcdClient
 
-	timeout := time.Second
-	ctx, _ := context.WithTimeout(context.Background(), timeout)
+	client.CreateEtcdClient("127.0.0.1:22379")
 
-	_, err = cli.Put(ctx, "vv", "no")
-
-
-	if err != nil {
-		fmt.Println("Failed to put the key: " + err.Error())
-	}
-
-	resp, err := cli.Get(ctx, "vv")
-
-	if err != nil {
-		fmt.Println("Fialed to get key: " + err.Error())
-	}
-
-	fmt.Println(string(resp.Kvs[0].Value))
+	fmt.Println(client.AmILeader())
 }

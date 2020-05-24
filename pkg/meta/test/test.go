@@ -9,12 +9,12 @@ import (
 type Test struct {
 	Num int
 
-	//Host mgt.Host
+	//Host initialize.Host
 }
 
 func main()  {
-	//config := mgt.LoadConfig()
-	//hosts := mgt.LoadHosts(config.Hosts)
+	//config := initialize.LoadConfig()
+	//hosts := initialize.LoadHosts(config.Hosts)
 	//subgroups := subgroup.InitSubgroups(hosts)
 	//
 	//for _, group := range subgroups {

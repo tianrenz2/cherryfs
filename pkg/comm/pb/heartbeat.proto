@@ -1,0 +1,17 @@
+syntax = "proto3";
+package heartbeatpb;
+
+option go_package = ".;pb";
+
+
+service RecHeartBeat {
+    rpc RecHeartBeat (HeartbeatRequest) returns (HeartbeatResponse) {}
+}
+
+message HeartbeatRequest {
+    int64 status = 1;
+}
+
+message HeartbeatResponse {
+    int32 status = 1;
+}

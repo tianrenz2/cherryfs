@@ -4,7 +4,7 @@ import (
 	"cherryfs/pkg/roles/host"
 	"cherryfs/pkg/roles/dir"
 	"cherryfs/pkg/meta/subgroup"
-	"cherryfs/pkg/meta/etcd"
+	"cherryfs/pkg/etcd"
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
@@ -27,6 +27,8 @@ type Context struct {
 	HManager *host.HostManager
 	DManager *dir.DirManager
 	EtcdCli etcd.EtcdClient
+	Leader string
+	HostId string
 }
 
 func (ctx *Context) InitManagers() {

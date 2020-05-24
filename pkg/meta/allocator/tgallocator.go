@@ -63,6 +63,7 @@ func (allocator *Allocator) AllocateTargetFromSg(subgroup subgroup.SubGroup, obj
 			if err != nil {
 				return Target{}, fmt.Errorf("%v", err)
 			}
+
 			baseScore := d.GetBaseScore()
 			multiplier := d.TotalSpace - d.UsedSpace - obj.Size
 			score := baseScore * float64(multiplier)
