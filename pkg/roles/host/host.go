@@ -70,3 +70,32 @@ func (hostMg *HostManager) InitAllHosts(configHosts []ConfigHost, dirManager *di
 
 	return nil
 }
+
+func (hostMg *HostManager) AddHost(hostAddr string, hostDirs []dir.Dir, dirManager *dir.DirManager) (string, error) {
+	host, err := hostMg.InitNewHost(hostAddr, hostDirs, dirManager)
+	if err != nil {
+		return "", fmt.Errorf("%v", err)
+	}
+	hostMg.Hosts = append(hostMg.Hosts, host)
+	hostMg.hostMap[host.HostId] = host
+	return host.HostId, nil
+}
+
+func (hostMg *HostManager) InitNewHost(hostAddr string, hostDirs []dir.Dir, dirManager *dir.DirManager) (*Host, error)  {
+	hostId := uuid.New().String()
+	dirs := make([]string, 0)
+	for _, hostDir := range hostDirs {
+		id, _ := dirManager.CreateDir(hostDir.Path, hostId)
+		dirManager.SetTotalSpace(id, hostDir.TotalSpace)
+		dirManager.SetUsedSpace(id, hostDir.UsedSpace)
+		dirs = append(dirs, id)
+	}
+
+	host := Host{
+		HostId:hostId,
+		Address:hostAddr,
+		Dirs:dirs,
+	}
+
+	return &host, nil
+}

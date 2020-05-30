@@ -9,21 +9,20 @@ import (
 	"bytes"
 	"io"
 	"cherryfs/pkg/object"
-	"cherryfs/pkg/chunk"
+	"cherryfs/pkg/chunk/chunkmanage"
 	"os"
-	"cherryfs/pkg/context"
 	"cherryfs/pkg/etcd"
 )
 
-type server struct {
-	pb.UnimplementedPutServer
+type ChunkServer struct {
+	pb.UnimplementedChunkServerServer
 }
 
-var chunkCtx = chunk.ChunkContext{}
+var chunkCtx = chunkmanage.ChunkContext{}
 var address	= ""
 
 
-var chunkContext context.Context
+var chunkContext chunkmanage.ChunkContext
 
 func StartServer()  {
 	chunkContext = initContext()
@@ -40,15 +39,14 @@ func StartServer()  {
 	fmt.Printf("Server Address: %s\n", chunkCtx.Address)
 
 	s := grpc.NewServer()
-	pb.RegisterPutServer(s, &server{})
+	pb.RegisterChunkServerServer(s, &ChunkServer{})
 	if err := s.Serve(lis); err != nil {
 		log.Fatalf("Failed to serve: %v", err)
 	}
 }
 
 
-
-func (s *server) PutObject(stream pb.Put_PutObjectServer) (error) {
+func (s *ChunkServer) PutObject(stream pb.ChunkServer_PutObjectServer) (error) {
 	info, err := stream.Recv()
 	if err != nil {
 		return err
@@ -93,6 +91,8 @@ func (s *server) PutObject(stream pb.Put_PutObjectServer) (error) {
 		err = lcObject.ObjectStore(data)
 		if err == nil{
 			err = lcObject.PostStore(chunkContext)
+		} else {
+			fmt.Printf("error happened %v\n", err)
 		}
 	}
 	var msg = "Success"
@@ -111,15 +111,12 @@ func (s *server) PutObject(stream pb.Put_PutObjectServer) (error) {
 	return err
 }
 
-func initContext() context.Context {
-
+func initContext() chunkmanage.ChunkContext {
 	var etcdClient etcd.EtcdClient
-
 	etcdClient.CreateEtcdClient(os.Getenv("ETCD_ADDR"))
 
-	newCtx := context.Context{
+	newCtx := chunkmanage.ChunkContext{
 		EtcdCli: etcdClient,
-		HostId: os.Getenv("ADDR"),
 	}
 
 	return newCtx
@@ -127,6 +124,13 @@ func initContext() context.Context {
 
 
 func main()  {
+	var etcdClient etcd.EtcdClient
+	etcdClient.CreateEtcdClient(os.Getenv("ETCD_ADDR"))
+	cCtx := chunkmanage.ChunkContext{
+		EtcdCli:etcdClient,
+	}
+
+	cCtx.StartupChunk()
 	StartServer()
 }
 

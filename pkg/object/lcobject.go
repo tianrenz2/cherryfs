@@ -5,7 +5,7 @@ import (
 	"os"
 	"path"
 	"fmt"
-	"cherryfs/pkg/context"
+	"cherryfs/pkg/chunk/chunkmanage"
 )
 
 type LocalObject struct {
@@ -16,7 +16,9 @@ type LocalObject struct {
 }
 
 func (lcObject *LocalObject) ObjectStore(data bytes.Buffer) (error) {
-	file, err := os.Create(path.Join(lcObject.Path, lcObject.Name))
+	destPath := path.Join(lcObject.Path, lcObject.Name)
+	fmt.Println(destPath)
+	file, err := os.Create(destPath)
 	_, err = data.WriteTo(file)
 
 	if err != nil {
@@ -25,12 +27,14 @@ func (lcObject *LocalObject) ObjectStore(data bytes.Buffer) (error) {
 	return nil
 }
 
-func (lcObject *LocalObject) PostStore(ctx context.Context) error {
+func (lcObject *LocalObject) PostStore(ctx chunkmanage.ChunkContext) error {
 
 	putKey := ObjectKeyPrefix + lcObject.Name + "/" + ctx.HostId
 
 	ctx.EtcdCli.CreateEtcdClient(os.Getenv("ETCD_ADDR"))
 	err := ctx.EtcdCli.Put(putKey, "1")
+
+	fmt.Printf("put %s\n", putKey)
 
 	fmt.Println(putKey)
 	return err

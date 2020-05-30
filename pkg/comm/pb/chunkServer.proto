@@ -5,8 +5,9 @@ option go_package = ".;pb";
 
 import "metaServer.proto";
 
-service Put {
+service ChunkServer {
     rpc PutObject(stream PutRequest) returns (PutResponse) {}
+    rpc GetObject(GetRequest) returns (stream GetResponse) {}
 }
 
 message ObjectInfo {
@@ -25,4 +26,13 @@ message PutRequest {
 message PutResponse {
     string Message = 1;
     int32 Code = 2;
+}
+
+message GetRequest {
+    string name = 1;
+    string dir = 2;
+}
+
+message GetResponse {
+    bytes content = 1;
 }

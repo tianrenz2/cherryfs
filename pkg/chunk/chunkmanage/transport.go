@@ -1,17 +1,12 @@
-package chunk
+package chunkmanage
 
 import (
-	"google.golang.org/grpc"
 	"bytes"
+	"cherryfs/pkg/comm/pb"
+	"google.golang.org/grpc"
 	"fmt"
 	"context"
-	pb "cherryfs/pkg/comm/pb"
 )
-
-type ChunkContext struct {
-	Address string
-	Client  pb.PutClient
-}
 
 func (chunkCtx *ChunkContext) SendAsRec(writing *bool, buffer *bytes.Buffer, info *pb.ObjectInfo, targets []*pb.Target) (error) {
 	var newTargets = make([]*pb.Target, 0)
@@ -29,7 +24,7 @@ func (chunkCtx *ChunkContext) SendAsRec(writing *bool, buffer *bytes.Buffer, inf
 	nextAddr := newTargets[0].DestAddr
 
 	conn, _ := grpc.Dial(nextAddr, grpc.WithInsecure(), grpc.WithBlock())
-	chunkCtx.Client = pb.NewPutClient(conn)
+	chunkCtx.Client = pb.NewChunkServerClient(conn)
 
 	stream, err := chunkCtx.Client.PutObject(context.Background())
 
@@ -65,7 +60,7 @@ func (chunkCtx *ChunkContext) SendAsRec(writing *bool, buffer *bytes.Buffer, inf
 				},
 			)
 			if err != nil {
-				err = fmt.Errorf("failed to send chunk via stream: %v", err)
+				err = fmt.Errorf("failed to send chunkmanage via stream: %v", err)
 				return err
 			}
 

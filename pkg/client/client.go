@@ -1,14 +1,15 @@
 package main
 
 import (
-	pb "cherryfs/pkg/comm/pb"
+	"cherryfs/pkg/comm/pb"
 	"time"
 	"log"
 	"context"
 	"google.golang.org/grpc"
-	"io"
 	"fmt"
 	"os"
+	"io"
+	"bytes"
 )
 
 const (
@@ -16,13 +17,18 @@ const (
 )
 
 type Client struct {
-	ChunkClient pb.PutClient
+	ChunkClient pb.ChunkServerClient
 	MetaClient pb.MetaServiceClient
 	Ctx context.Context
+	ClusterAddr string
 }
 
-func (client *Client)MakeMetaConn(addr string) {
-	conn, err := grpc.Dial(addr, grpc.WithInsecure(), grpc.WithBlock())
+func (client *Client)Init(clusterAddr string)  {
+	client.ClusterAddr = clusterAddr
+}
+
+func (client *Client)MakeMetaConn() {
+	conn, err := grpc.Dial(client.ClusterAddr, grpc.WithInsecure(), grpc.WithBlock())
 	if err != nil {
 		log.Fatalf("did not connect: %v", err)
 	}
@@ -36,13 +42,11 @@ func (client *Client)MakeMetaConn(addr string) {
 func (client *Client)MakeChunkConn(addr string) {
 	fmt.Printf("Making connection to %s\n", addr)
 	conn, _ := grpc.Dial(addr, grpc.WithInsecure(), grpc.WithBlock())
-	client.ChunkClient = pb.NewPutClient(conn)
+	client.ChunkClient = pb.NewChunkServerClient(conn)
 }
 
-func (client *Client)Put(name string, objPath string, addr string) (error) {
-	addr = addr + ":" + port
-
-	client.MakeMetaConn(addr)
+func (client *Client)Put(name string, objPath string) (error) {
+	client.MakeMetaConn()
 
 	var size = int64(10)
 	var objectHash = "xxxxxxxx"
@@ -119,7 +123,7 @@ func (client *Client)UploadObject(ctx context.Context, f string, targets []*pb.T
 		)
 
 		if err != nil {
-			err = fmt.Errorf("failed to send chunk via stream: %v", err)
+			err = fmt.Errorf("failed to send chunkmanage via stream: %v", err)
 			return pb.PutResponse{}, err
 		}
 	}
@@ -133,23 +137,67 @@ func (client *Client)UploadObject(ctx context.Context, f string, targets []*pb.T
 	return *ret, err
 }
 
+func (client *Client) Get(name, outputFile string) (error) {
+	client.MakeMetaConn()
 
-func initConnection() (pb.MetaServiceClient, context.Context) {
-	var address = "127.0.0.1:50051"
-	conn, err := grpc.Dial(address, grpc.WithInsecure(), grpc.WithBlock())
+	askGetReq := pb.AskGetRequest{Name:name}
+
+	askGetResp, err := client.MetaClient.AskGet(client.Ctx, &askGetReq)
+
 	if err != nil {
-		log.Fatalf("did not connect: %v", err)
+		return fmt.Errorf("failed to get object: %v", err)
 	}
-	//defer conn.Close()
-	c := pb.NewMetaServiceClient(conn)
 
-	ctx, _ := context.WithTimeout(context.Background(), time.Minute)
-	//defer cancel()
-	return c, ctx
+	target := askGetResp.Target
+	fmt.Println(target)
+	client.DownloadObject(target.DestAddr, target.DestDir, name, outputFile)
+
+	return nil
+}
+
+func (client *Client) DownloadObject(addr, dir, name, outputFile string) (error) {
+	client.MakeChunkConn(addr)
+	stream, err := client.ChunkClient.GetObject( context.Background(), &pb.GetRequest{Name: name, Dir: dir})
+
+	if err != nil {
+		return err
+	}
+
+	outFile, err := os.Open(outputFile)
+
+	if err != nil {
+		return fmt.Errorf("failed to create file: %v", err)
+	}
+
+	data := bytes.Buffer{}
+
+	for {
+		recChunk, err := stream.Recv()
+
+		if err != nil {
+			if err == io.EOF {
+				break
+			}
+			err = fmt.Errorf("failed unexpectadely while reading chunks from stream")
+			return err
+		}else {
+			data.Write(recChunk.GetContent())
+		}
+	}
+
+	_, err = data.WriteTo(outFile)
+
+	if err != nil {
+		return fmt.Errorf("%v", err)
+	}
+
+	return nil
 }
 
 func main()  {
 	cli := Client{}
+
+	cli.Init("127.0.0.1:50051")
 
 	if len(os.Args) < 3 {
 		log.Fatalf("Not enough arguments")
@@ -159,7 +207,9 @@ func main()  {
 	ObjectKey := os.Args[1]
 	ObjectPath := os.Args[2]
 
-	err := cli.Put(ObjectKey, ObjectPath, "127.0.0.1")
+	//err := cli.Put(ObjectKey, ObjectPath)
+
+	err := cli.Get(ObjectKey, ObjectPath)
 
 	if err != nil {
 		fmt.Errorf("failed to put object: %v\n", err)

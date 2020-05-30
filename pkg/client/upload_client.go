@@ -60,7 +60,7 @@ func (c *PutClientIns) UploadObject(ctx context.Context, f string) (pb.PutRespon
 		)
 
 		if err != nil {
-			err = fmt.Errorf("failed to send chunk via stream: %v", err)
+			err = fmt.Errorf("failed to send chunkmanage via stream: %v", err)
 			return pb.PutResponse{}, err
 		}
 	}

@@ -5,6 +5,7 @@ option go_package = ".;pb";
 
 service MetaService {
     rpc AskPut (AskPutRequest) returns (AskPutResponse) {}
+    rpc AskGet (AskGetRequest) returns (AskGetResponse) {}
 }
 
 message Target {

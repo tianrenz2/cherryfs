@@ -14,9 +14,9 @@ import (
 */
 
 type SubGroup struct {
-	SubGroupId int
-	Hosts []string
-	DManager dir.DirSubGroupSetting
+	SubGroupId  int
+	Hosts       []string
+	DirSettings dir.DirSubGroupSetting
 }
 
 type SubGroupManager struct {
@@ -52,6 +52,11 @@ func (subGroupMg *SubGroupManager)InitSubgroups(allHosts []*host.Host) ([]SubGro
 	}
 
 	var subgroups = make([]SubGroup, 0)
+
+	if subgroupNum == 0 {
+		return subgroups, nil
+	}
+
 	numPerGroup := hostNum / subgroupNum
 
 	for groupIndex :=0; groupIndex < subgroupNum; groupIndex++ {
@@ -70,7 +75,7 @@ func (subGroupMg *SubGroupManager)InitSubgroups(allHosts []*host.Host) ([]SubGro
 
 func (subGroupMg *SubGroupManager) InitOneSubgroup(allHosts []*host.Host, groupIndex, groupStart, groupEnd int) (SubGroup, error) {
 	var subgroup = SubGroup{Hosts: make([]string, 0), SubGroupId:groupIndex}
-	subgroup.DManager = dir.DirSubGroupSetting{ReliefNum: dir.DefaultReliefNum}
+	subgroup.DirSettings = dir.DirSubGroupSetting{ReliefNum: dir.DefaultReliefNum}
 
 	if groupEnd > len(allHosts) {
 		groupEnd = len(allHosts)
@@ -83,6 +88,15 @@ func (subGroupMg *SubGroupManager) InitOneSubgroup(allHosts []*host.Host, groupI
 	return subgroup, nil
 }
 
-func (subGroupMg *SubGroupManager) LoadExistingConfig()  {
+func (subGroupMg *SubGroupManager) AssignSubgroupToHost() () {
+	if len(subGroupMg.SubGroups) < config.MinReplicaNum {
+
+	}
+}
+
+func (subGroupMg *SubGroupManager) AddSubgoup() {
+	groupIndex := len(subGroupMg.SubGroups)
+	var subgroup = SubGroup{Hosts: make([]string, 0), SubGroupId:groupIndex}
+	subGroupMg.SubGroups = append(subGroupMg.SubGroups, subgroup)
 
 }

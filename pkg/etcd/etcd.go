@@ -56,12 +56,15 @@ func (client *EtcdClient) GetWithPrefix(keyPrefix string) (map[string]string, er
 
 func (client *EtcdClient)Get(key string) (string, error) {
 	resp, err := client.client.Get(client.ctx, key)
+
+	if len(resp.Kvs) == 0 {
+		return "", fmt.Errorf("value does not exist")
+	}
+
 	var val = ""
 	if err == nil{
 		val = string(resp.Kvs[0].Value)
 	}
-
-	fmt.Println(val)
 
 	return val, err
 }
@@ -72,7 +75,19 @@ func (client *EtcdClient)AmILeader() (bool) {
 	return (*status).Header.MemberId == (*status).Leader
 }
 
-func main()  {
+func (client *EtcdClient)WatchKey(isPrefix bool, keyword string) clientv3.WatchChan {
+	opts := []clientv3.OpOption{}
+	if isPrefix {
+		opts = append(opts, clientv3.WithPrefix())
+	}
+	fmt.Println(opts)
+	watchChan := client.client.Watch(context.Background(), keyword, opts...)
+
+	return watchChan
+}
+
+
+func main() {
 	//cfg := clientv3.Config{
 	//	Endpoints: []string{"http://127.0.0.1:22379"},
 	//	DialTimeout: 5 * time.Second,
@@ -83,9 +98,4 @@ func main()  {
 	//	fmt.Println("Failed to create client: " + err.Error())
 	//}
 
-	var client EtcdClient
-
-	client.CreateEtcdClient("127.0.0.1:22379")
-
-	fmt.Println(client.AmILeader())
 }

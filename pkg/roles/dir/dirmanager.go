@@ -38,14 +38,24 @@ func (dirMg *DirManager) CreateDir(path, hostId string) (dirId string, err error
 	dirId = dirMg.GenDirId(path, hostId)
 	newDir := Dir{Path:path, HostId:hostId, DirId:dirId}
 	dirMg.HireDir(&newDir)
-
 	return dirId, nil
 }
 
 func (dirMg *DirManager) HireDir(dir *Dir)  {
 	dirMg.Dirs = append(dirMg.Dirs, dir)
+	dirMg.dirMap[dir.DirId] = dir
 }
 
 func (dirMg *DirManager) GenDirId(path, hostId string) string {
 	return fmt.Sprintf("%s-%s", hostId, base64.StdEncoding.EncodeToString([]byte(path)))
+}
+
+func (dirMg *DirManager) SetUsedSpace(dirId string, space int64) error {
+	dirMg.dirMap[dirId].UsedSpace = space
+	return nil
+}
+
+func (dirMg *DirManager) SetTotalSpace(dirId string, space int64) error {
+	dirMg.dirMap[dirId].TotalSpace = space
+	return nil
 }

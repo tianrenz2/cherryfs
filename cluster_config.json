@@ -1,32 +1,4 @@
 {
   "subgroupnum": 3,
-  "hosts": [
-    {
-      "hostname": "host1",
-      "address": "192.168.30.2:50010",
-      "role": "master",
-      "dirs": [
-        "/tmp/cherryfs/2",
-        "/tmp/cherryfs/5"
-      ]
-    },
-    {
-      "hostname": "host2",
-      "role": "storage",
-      "address": "192.168.30.3:50011",
-      "dirs": [
-        "/tmp/cherryfs/3",
-        "/tmp/cherryfs/6"
-      ]
-    },
-    {
-      "hostname": "host3",
-      "role": "storage",
-      "address": "192.168.30.4:50012",
-      "dirs": [
-        "/tmp/cherryfs/4",
-        "/tmp/cherryfs/7"
-      ]
-    }
-  ]
+  "hosts": []
 }

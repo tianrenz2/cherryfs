@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"cherryfs/pkg/context"
 	"fmt"
+	"os"
 )
 
 type Object struct {
@@ -26,7 +27,11 @@ func (Obj *Object) PutMeta(ctx context.Context) (error) {
 		return err
 	}
 
-	err = ctx.EtcdCli.Put(ObjectKeyPrefix + Obj.Name, string(serialized))
+	key := ObjectKeyPrefix + Obj.Name
+
+	fmt.Println(key)
+	ctx.EtcdCli.CreateEtcdClient(os.Getenv("ETCDADDR"))
+	err = ctx.EtcdCli.Put(key, string(serialized))
 
 	for _, target := range Obj.Targets {
 		ctx.EtcdCli.Put(ObjectKeyPrefix + Obj.Name + "/" + target.DestId, "0")
@@ -39,7 +44,8 @@ func (Obj *Object) PutMeta(ctx context.Context) (error) {
 	return nil
 }
 
-func GetObject(name string, ctx context.Context) (*pb.Target, error) {
+func GetObjectTarget(name string, ctx context.Context) (*pb.Target, error) {
+	ctx.EtcdCli.CreateEtcdClient(os.Getenv("ETCDADDR"))
 
 	info, err := ctx.EtcdCli.Get(ObjectKeyPrefix + name)
 
@@ -58,8 +64,14 @@ func GetObject(name string, ctx context.Context) (*pb.Target, error) {
 	state := "0"
 	chosenIndex := 0
 
-	for state=="0" {
-		state, _ = ctx.EtcdCli.Get(ObjectKeyPrefix + name + object.Targets[chosenIndex].DestId)
+	for {
+		getKey := ObjectKeyPrefix + "/" + name + "/" + object.Targets[chosenIndex].DestId
+
+		fmt.Printf("Get by key: %s\n", getKey)
+		state, _ = ctx.EtcdCli.Get(getKey)
+		if state == "1" {
+			break
+		}
 		chosenIndex += 1
 		if chosenIndex >= len(object.Targets) {
 			return nil, fmt.Errorf("no target is valid")
@@ -68,3 +80,4 @@ func GetObject(name string, ctx context.Context) (*pb.Target, error) {
 
 	return object.Targets[chosenIndex], nil
 }
+

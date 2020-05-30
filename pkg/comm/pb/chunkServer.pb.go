@@ -29,6 +29,69 @@ const (
 // of the legacy proto package is being used.
 const _ = proto.ProtoPackageIsVersion4
 
+type ObjectInfo struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	Targets []*Target `protobuf:"bytes,1,rep,name=targets,proto3" json:"targets,omitempty"`
+	Name    string    `protobuf:"bytes,2,opt,name=name,proto3" json:"name,omitempty"`
+	Hash    string    `protobuf:"bytes,3,opt,name=hash,proto3" json:"hash,omitempty"`
+}
+
+func (x *ObjectInfo) Reset() {
+	*x = ObjectInfo{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_chunkServer_proto_msgTypes[0]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *ObjectInfo) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ObjectInfo) ProtoMessage() {}
+
+func (x *ObjectInfo) ProtoReflect() protoreflect.Message {
+	mi := &file_chunkServer_proto_msgTypes[0]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ObjectInfo.ProtoReflect.Descriptor instead.
+func (*ObjectInfo) Descriptor() ([]byte, []int) {
+	return file_chunkServer_proto_rawDescGZIP(), []int{0}
+}
+
+func (x *ObjectInfo) GetTargets() []*Target {
+	if x != nil {
+		return x.Targets
+	}
+	return nil
+}
+
+func (x *ObjectInfo) GetName() string {
+	if x != nil {
+		return x.Name
+	}
+	return ""
+}
+
+func (x *ObjectInfo) GetHash() string {
+	if x != nil {
+		return x.Hash
+	}
+	return ""
+}
+
 type PutRequest struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -43,7 +106,7 @@ type PutRequest struct {
 func (x *PutRequest) Reset() {
 	*x = PutRequest{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_chunkServer_proto_msgTypes[0]
+		mi := &file_chunkServer_proto_msgTypes[1]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -56,7 +119,7 @@ func (x *PutRequest) String() string {
 func (*PutRequest) ProtoMessage() {}
 
 func (x *PutRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_chunkServer_proto_msgTypes[0]
+	mi := &file_chunkServer_proto_msgTypes[1]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -69,7 +132,7 @@ func (x *PutRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use PutRequest.ProtoReflect.Descriptor instead.
 func (*PutRequest) Descriptor() ([]byte, []int) {
-	return file_chunkServer_proto_rawDescGZIP(), []int{0}
+	return file_chunkServer_proto_rawDescGZIP(), []int{1}
 }
 
 func (m *PutRequest) GetData() isPutRequest_Data {
@@ -108,69 +171,6 @@ type PutRequest_Content struct {
 func (*PutRequest_Info) isPutRequest_Data() {}
 
 func (*PutRequest_Content) isPutRequest_Data() {}
-
-type ObjectInfo struct {
-	state         protoimpl.MessageState
-	sizeCache     protoimpl.SizeCache
-	unknownFields protoimpl.UnknownFields
-
-	Targets []*Target `protobuf:"bytes,1,rep,name=targets,proto3" json:"targets,omitempty"`
-	Name    string    `protobuf:"bytes,2,opt,name=name,proto3" json:"name,omitempty"`
-	Hash    string    `protobuf:"bytes,3,opt,name=hash,proto3" json:"hash,omitempty"`
-}
-
-func (x *ObjectInfo) Reset() {
-	*x = ObjectInfo{}
-	if protoimpl.UnsafeEnabled {
-		mi := &file_chunkServer_proto_msgTypes[1]
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		ms.StoreMessageInfo(mi)
-	}
-}
-
-func (x *ObjectInfo) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*ObjectInfo) ProtoMessage() {}
-
-func (x *ObjectInfo) ProtoReflect() protoreflect.Message {
-	mi := &file_chunkServer_proto_msgTypes[1]
-	if protoimpl.UnsafeEnabled && x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use ObjectInfo.ProtoReflect.Descriptor instead.
-func (*ObjectInfo) Descriptor() ([]byte, []int) {
-	return file_chunkServer_proto_rawDescGZIP(), []int{1}
-}
-
-func (x *ObjectInfo) GetTargets() []*Target {
-	if x != nil {
-		return x.Targets
-	}
-	return nil
-}
-
-func (x *ObjectInfo) GetName() string {
-	if x != nil {
-		return x.Name
-	}
-	return ""
-}
-
-func (x *ObjectInfo) GetHash() string {
-	if x != nil {
-		return x.Hash
-	}
-	return ""
-}
 
 type PutResponse struct {
 	state         protoimpl.MessageState
@@ -227,32 +227,143 @@ func (x *PutResponse) GetCode() int32 {
 	return 0
 }
 
+type GetRequest struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	Name string `protobuf:"bytes,1,opt,name=name,proto3" json:"name,omitempty"`
+	Dir  string `protobuf:"bytes,2,opt,name=dir,proto3" json:"dir,omitempty"`
+}
+
+func (x *GetRequest) Reset() {
+	*x = GetRequest{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_chunkServer_proto_msgTypes[3]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *GetRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GetRequest) ProtoMessage() {}
+
+func (x *GetRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_chunkServer_proto_msgTypes[3]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GetRequest.ProtoReflect.Descriptor instead.
+func (*GetRequest) Descriptor() ([]byte, []int) {
+	return file_chunkServer_proto_rawDescGZIP(), []int{3}
+}
+
+func (x *GetRequest) GetName() string {
+	if x != nil {
+		return x.Name
+	}
+	return ""
+}
+
+func (x *GetRequest) GetDir() string {
+	if x != nil {
+		return x.Dir
+	}
+	return ""
+}
+
+type GetResponse struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	Content []byte `protobuf:"bytes,1,opt,name=content,proto3" json:"content,omitempty"`
+}
+
+func (x *GetResponse) Reset() {
+	*x = GetResponse{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_chunkServer_proto_msgTypes[4]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *GetResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GetResponse) ProtoMessage() {}
+
+func (x *GetResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_chunkServer_proto_msgTypes[4]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GetResponse.ProtoReflect.Descriptor instead.
+func (*GetResponse) Descriptor() ([]byte, []int) {
+	return file_chunkServer_proto_rawDescGZIP(), []int{4}
+}
+
+func (x *GetResponse) GetContent() []byte {
+	if x != nil {
+		return x.Content
+	}
+	return nil
+}
+
 var File_chunkServer_proto protoreflect.FileDescriptor
 
 var file_chunkServer_proto_rawDesc = []byte{
 	0x0a, 0x11, 0x63, 0x68, 0x75, 0x6e, 0x6b, 0x53, 0x65, 0x72, 0x76, 0x65, 0x72, 0x2e, 0x70, 0x72,
 	0x6f, 0x74, 0x6f, 0x12, 0x02, 0x70, 0x62, 0x1a, 0x10, 0x6d, 0x65, 0x74, 0x61, 0x53, 0x65, 0x72,
-	0x76, 0x65, 0x72, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x22, 0x56, 0x0a, 0x0a, 0x50, 0x75, 0x74,
-	0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x12, 0x24, 0x0a, 0x04, 0x69, 0x6e, 0x66, 0x6f, 0x18,
-	0x01, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x0e, 0x2e, 0x70, 0x62, 0x2e, 0x4f, 0x62, 0x6a, 0x65, 0x63,
-	0x74, 0x49, 0x6e, 0x66, 0x6f, 0x48, 0x00, 0x52, 0x04, 0x69, 0x6e, 0x66, 0x6f, 0x12, 0x1a, 0x0a,
-	0x07, 0x63, 0x6f, 0x6e, 0x74, 0x65, 0x6e, 0x74, 0x18, 0x02, 0x20, 0x01, 0x28, 0x0c, 0x48, 0x00,
-	0x52, 0x07, 0x63, 0x6f, 0x6e, 0x74, 0x65, 0x6e, 0x74, 0x42, 0x06, 0x0a, 0x04, 0x64, 0x61, 0x74,
-	0x61, 0x22, 0x5a, 0x0a, 0x0a, 0x4f, 0x62, 0x6a, 0x65, 0x63, 0x74, 0x49, 0x6e, 0x66, 0x6f, 0x12,
-	0x24, 0x0a, 0x07, 0x74, 0x61, 0x72, 0x67, 0x65, 0x74, 0x73, 0x18, 0x01, 0x20, 0x03, 0x28, 0x0b,
-	0x32, 0x0a, 0x2e, 0x70, 0x62, 0x2e, 0x54, 0x61, 0x72, 0x67, 0x65, 0x74, 0x52, 0x07, 0x74, 0x61,
-	0x72, 0x67, 0x65, 0x74, 0x73, 0x12, 0x12, 0x0a, 0x04, 0x6e, 0x61, 0x6d, 0x65, 0x18, 0x02, 0x20,
-	0x01, 0x28, 0x09, 0x52, 0x04, 0x6e, 0x61, 0x6d, 0x65, 0x12, 0x12, 0x0a, 0x04, 0x68, 0x61, 0x73,
-	0x68, 0x18, 0x03, 0x20, 0x01, 0x28, 0x09, 0x52, 0x04, 0x68, 0x61, 0x73, 0x68, 0x22, 0x3b, 0x0a,
+	0x76, 0x65, 0x72, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x22, 0x5a, 0x0a, 0x0a, 0x4f, 0x62, 0x6a,
+	0x65, 0x63, 0x74, 0x49, 0x6e, 0x66, 0x6f, 0x12, 0x24, 0x0a, 0x07, 0x74, 0x61, 0x72, 0x67, 0x65,
+	0x74, 0x73, 0x18, 0x01, 0x20, 0x03, 0x28, 0x0b, 0x32, 0x0a, 0x2e, 0x70, 0x62, 0x2e, 0x54, 0x61,
+	0x72, 0x67, 0x65, 0x74, 0x52, 0x07, 0x74, 0x61, 0x72, 0x67, 0x65, 0x74, 0x73, 0x12, 0x12, 0x0a,
+	0x04, 0x6e, 0x61, 0x6d, 0x65, 0x18, 0x02, 0x20, 0x01, 0x28, 0x09, 0x52, 0x04, 0x6e, 0x61, 0x6d,
+	0x65, 0x12, 0x12, 0x0a, 0x04, 0x68, 0x61, 0x73, 0x68, 0x18, 0x03, 0x20, 0x01, 0x28, 0x09, 0x52,
+	0x04, 0x68, 0x61, 0x73, 0x68, 0x22, 0x56, 0x0a, 0x0a, 0x50, 0x75, 0x74, 0x52, 0x65, 0x71, 0x75,
+	0x65, 0x73, 0x74, 0x12, 0x24, 0x0a, 0x04, 0x69, 0x6e, 0x66, 0x6f, 0x18, 0x01, 0x20, 0x01, 0x28,
+	0x0b, 0x32, 0x0e, 0x2e, 0x70, 0x62, 0x2e, 0x4f, 0x62, 0x6a, 0x65, 0x63, 0x74, 0x49, 0x6e, 0x66,
+	0x6f, 0x48, 0x00, 0x52, 0x04, 0x69, 0x6e, 0x66, 0x6f, 0x12, 0x1a, 0x0a, 0x07, 0x63, 0x6f, 0x6e,
+	0x74, 0x65, 0x6e, 0x74, 0x18, 0x02, 0x20, 0x01, 0x28, 0x0c, 0x48, 0x00, 0x52, 0x07, 0x63, 0x6f,
+	0x6e, 0x74, 0x65, 0x6e, 0x74, 0x42, 0x06, 0x0a, 0x04, 0x64, 0x61, 0x74, 0x61, 0x22, 0x3b, 0x0a,
 	0x0b, 0x50, 0x75, 0x74, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x12, 0x18, 0x0a, 0x07,
 	0x4d, 0x65, 0x73, 0x73, 0x61, 0x67, 0x65, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x07, 0x4d,
 	0x65, 0x73, 0x73, 0x61, 0x67, 0x65, 0x12, 0x12, 0x0a, 0x04, 0x43, 0x6f, 0x64, 0x65, 0x18, 0x02,
-	0x20, 0x01, 0x28, 0x05, 0x52, 0x04, 0x43, 0x6f, 0x64, 0x65, 0x32, 0x37, 0x0a, 0x03, 0x50, 0x75,
-	0x74, 0x12, 0x30, 0x0a, 0x09, 0x50, 0x75, 0x74, 0x4f, 0x62, 0x6a, 0x65, 0x63, 0x74, 0x12, 0x0e,
-	0x2e, 0x70, 0x62, 0x2e, 0x50, 0x75, 0x74, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x1a, 0x0f,
-	0x2e, 0x70, 0x62, 0x2e, 0x50, 0x75, 0x74, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x22,
-	0x00, 0x28, 0x01, 0x42, 0x06, 0x5a, 0x04, 0x2e, 0x3b, 0x70, 0x62, 0x62, 0x06, 0x70, 0x72, 0x6f,
-	0x74, 0x6f, 0x33,
+	0x20, 0x01, 0x28, 0x05, 0x52, 0x04, 0x43, 0x6f, 0x64, 0x65, 0x22, 0x32, 0x0a, 0x0a, 0x47, 0x65,
+	0x74, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x12, 0x12, 0x0a, 0x04, 0x6e, 0x61, 0x6d, 0x65,
+	0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x04, 0x6e, 0x61, 0x6d, 0x65, 0x12, 0x10, 0x0a, 0x03,
+	0x64, 0x69, 0x72, 0x18, 0x02, 0x20, 0x01, 0x28, 0x09, 0x52, 0x03, 0x64, 0x69, 0x72, 0x22, 0x27,
+	0x0a, 0x0b, 0x47, 0x65, 0x74, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x12, 0x18, 0x0a,
+	0x07, 0x63, 0x6f, 0x6e, 0x74, 0x65, 0x6e, 0x74, 0x18, 0x01, 0x20, 0x01, 0x28, 0x0c, 0x52, 0x07,
+	0x63, 0x6f, 0x6e, 0x74, 0x65, 0x6e, 0x74, 0x32, 0x71, 0x0a, 0x0b, 0x43, 0x68, 0x75, 0x6e, 0x6b,
+	0x53, 0x65, 0x72, 0x76, 0x65, 0x72, 0x12, 0x30, 0x0a, 0x09, 0x50, 0x75, 0x74, 0x4f, 0x62, 0x6a,
+	0x65, 0x63, 0x74, 0x12, 0x0e, 0x2e, 0x70, 0x62, 0x2e, 0x50, 0x75, 0x74, 0x52, 0x65, 0x71, 0x75,
+	0x65, 0x73, 0x74, 0x1a, 0x0f, 0x2e, 0x70, 0x62, 0x2e, 0x50, 0x75, 0x74, 0x52, 0x65, 0x73, 0x70,
+	0x6f, 0x6e, 0x73, 0x65, 0x22, 0x00, 0x28, 0x01, 0x12, 0x30, 0x0a, 0x09, 0x47, 0x65, 0x74, 0x4f,
+	0x62, 0x6a, 0x65, 0x63, 0x74, 0x12, 0x0e, 0x2e, 0x70, 0x62, 0x2e, 0x47, 0x65, 0x74, 0x52, 0x65,
+	0x71, 0x75, 0x65, 0x73, 0x74, 0x1a, 0x0f, 0x2e, 0x70, 0x62, 0x2e, 0x47, 0x65, 0x74, 0x52, 0x65,
+	0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x22, 0x00, 0x30, 0x01, 0x42, 0x06, 0x5a, 0x04, 0x2e, 0x3b,
+	0x70, 0x62, 0x62, 0x06, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x33,
 }
 
 var (
@@ -267,20 +378,24 @@ func file_chunkServer_proto_rawDescGZIP() []byte {
 	return file_chunkServer_proto_rawDescData
 }
 
-var file_chunkServer_proto_msgTypes = make([]protoimpl.MessageInfo, 3)
+var file_chunkServer_proto_msgTypes = make([]protoimpl.MessageInfo, 5)
 var file_chunkServer_proto_goTypes = []interface{}{
-	(*PutRequest)(nil),  // 0: pb.PutRequest
-	(*ObjectInfo)(nil),  // 1: pb.ObjectInfo
+	(*ObjectInfo)(nil),  // 0: pb.ObjectInfo
+	(*PutRequest)(nil),  // 1: pb.PutRequest
 	(*PutResponse)(nil), // 2: pb.PutResponse
-	(*Target)(nil),      // 3: pb.Target
+	(*GetRequest)(nil),  // 3: pb.GetRequest
+	(*GetResponse)(nil), // 4: pb.GetResponse
+	(*Target)(nil),      // 5: pb.Target
 }
 var file_chunkServer_proto_depIdxs = []int32{
-	1, // 0: pb.PutRequest.info:type_name -> pb.ObjectInfo
-	3, // 1: pb.ObjectInfo.targets:type_name -> pb.Target
-	0, // 2: pb.Put.PutObject:input_type -> pb.PutRequest
-	2, // 3: pb.Put.PutObject:output_type -> pb.PutResponse
-	3, // [3:4] is the sub-list for method output_type
-	2, // [2:3] is the sub-list for method input_type
+	5, // 0: pb.ObjectInfo.targets:type_name -> pb.Target
+	0, // 1: pb.PutRequest.info:type_name -> pb.ObjectInfo
+	1, // 2: pb.ChunkServer.PutObject:input_type -> pb.PutRequest
+	3, // 3: pb.ChunkServer.GetObject:input_type -> pb.GetRequest
+	2, // 4: pb.ChunkServer.PutObject:output_type -> pb.PutResponse
+	4, // 5: pb.ChunkServer.GetObject:output_type -> pb.GetResponse
+	4, // [4:6] is the sub-list for method output_type
+	2, // [2:4] is the sub-list for method input_type
 	2, // [2:2] is the sub-list for extension type_name
 	2, // [2:2] is the sub-list for extension extendee
 	0, // [0:2] is the sub-list for field type_name
@@ -294,7 +409,7 @@ func file_chunkServer_proto_init() {
 	file_metaServer_proto_init()
 	if !protoimpl.UnsafeEnabled {
 		file_chunkServer_proto_msgTypes[0].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*PutRequest); i {
+			switch v := v.(*ObjectInfo); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -306,7 +421,7 @@ func file_chunkServer_proto_init() {
 			}
 		}
 		file_chunkServer_proto_msgTypes[1].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*ObjectInfo); i {
+			switch v := v.(*PutRequest); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -329,8 +444,32 @@ func file_chunkServer_proto_init() {
 				return nil
 			}
 		}
+		file_chunkServer_proto_msgTypes[3].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*GetRequest); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_chunkServer_proto_msgTypes[4].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*GetResponse); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
 	}
-	file_chunkServer_proto_msgTypes[0].OneofWrappers = []interface{}{
+	file_chunkServer_proto_msgTypes[1].OneofWrappers = []interface{}{
 		(*PutRequest_Info)(nil),
 		(*PutRequest_Content)(nil),
 	}
@@ -340,7 +479,7 @@ func file_chunkServer_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: file_chunkServer_proto_rawDesc,
 			NumEnums:      0,
-			NumMessages:   3,
+			NumMessages:   5,
 			NumExtensions: 0,
 			NumServices:   1,
 		},
@@ -362,45 +501,46 @@ var _ grpc.ClientConnInterface
 // is compatible with the grpc package it is being compiled against.
 const _ = grpc.SupportPackageIsVersion6
 
-// PutClient is the client API for Put service.
+// ChunkServerClient is the client API for ChunkServer service.
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://godoc.org/google.golang.org/grpc#ClientConn.NewStream.
-type PutClient interface {
-	PutObject(ctx context.Context, opts ...grpc.CallOption) (Put_PutObjectClient, error)
+type ChunkServerClient interface {
+	PutObject(ctx context.Context, opts ...grpc.CallOption) (ChunkServer_PutObjectClient, error)
+	GetObject(ctx context.Context, in *GetRequest, opts ...grpc.CallOption) (ChunkServer_GetObjectClient, error)
 }
 
-type putClient struct {
+type chunkServerClient struct {
 	cc grpc.ClientConnInterface
 }
 
-func NewPutClient(cc grpc.ClientConnInterface) PutClient {
-	return &putClient{cc}
+func NewChunkServerClient(cc grpc.ClientConnInterface) ChunkServerClient {
+	return &chunkServerClient{cc}
 }
 
-func (c *putClient) PutObject(ctx context.Context, opts ...grpc.CallOption) (Put_PutObjectClient, error) {
-	stream, err := c.cc.NewStream(ctx, &_Put_serviceDesc.Streams[0], "/pb.Put/PutObject", opts...)
+func (c *chunkServerClient) PutObject(ctx context.Context, opts ...grpc.CallOption) (ChunkServer_PutObjectClient, error) {
+	stream, err := c.cc.NewStream(ctx, &_ChunkServer_serviceDesc.Streams[0], "/pb.ChunkServer/PutObject", opts...)
 	if err != nil {
 		return nil, err
 	}
-	x := &putPutObjectClient{stream}
+	x := &chunkServerPutObjectClient{stream}
 	return x, nil
 }
 
-type Put_PutObjectClient interface {
+type ChunkServer_PutObjectClient interface {
 	Send(*PutRequest) error
 	CloseAndRecv() (*PutResponse, error)
 	grpc.ClientStream
 }
 
-type putPutObjectClient struct {
+type chunkServerPutObjectClient struct {
 	grpc.ClientStream
 }
 
-func (x *putPutObjectClient) Send(m *PutRequest) error {
+func (x *chunkServerPutObjectClient) Send(m *PutRequest) error {
 	return x.ClientStream.SendMsg(m)
 }
 
-func (x *putPutObjectClient) CloseAndRecv() (*PutResponse, error) {
+func (x *chunkServerPutObjectClient) CloseAndRecv() (*PutResponse, error) {
 	if err := x.ClientStream.CloseSend(); err != nil {
 		return nil, err
 	}
@@ -411,42 +551,78 @@ func (x *putPutObjectClient) CloseAndRecv() (*PutResponse, error) {
 	return m, nil
 }
 
-// PutServer is the server API for Put service.
-type PutServer interface {
-	PutObject(Put_PutObjectServer) error
+func (c *chunkServerClient) GetObject(ctx context.Context, in *GetRequest, opts ...grpc.CallOption) (ChunkServer_GetObjectClient, error) {
+	stream, err := c.cc.NewStream(ctx, &_ChunkServer_serviceDesc.Streams[1], "/pb.ChunkServer/GetObject", opts...)
+	if err != nil {
+		return nil, err
+	}
+	x := &chunkServerGetObjectClient{stream}
+	if err := x.ClientStream.SendMsg(in); err != nil {
+		return nil, err
+	}
+	if err := x.ClientStream.CloseSend(); err != nil {
+		return nil, err
+	}
+	return x, nil
 }
 
-// UnimplementedPutServer can be embedded to have forward compatible implementations.
-type UnimplementedPutServer struct {
+type ChunkServer_GetObjectClient interface {
+	Recv() (*GetResponse, error)
+	grpc.ClientStream
 }
 
-func (*UnimplementedPutServer) PutObject(Put_PutObjectServer) error {
+type chunkServerGetObjectClient struct {
+	grpc.ClientStream
+}
+
+func (x *chunkServerGetObjectClient) Recv() (*GetResponse, error) {
+	m := new(GetResponse)
+	if err := x.ClientStream.RecvMsg(m); err != nil {
+		return nil, err
+	}
+	return m, nil
+}
+
+// ChunkServerServer is the server API for ChunkServer service.
+type ChunkServerServer interface {
+	PutObject(ChunkServer_PutObjectServer) error
+	GetObject(*GetRequest, ChunkServer_GetObjectServer) error
+}
+
+// UnimplementedChunkServerServer can be embedded to have forward compatible implementations.
+type UnimplementedChunkServerServer struct {
+}
+
+func (*UnimplementedChunkServerServer) PutObject(ChunkServer_PutObjectServer) error {
 	return status.Errorf(codes.Unimplemented, "method PutObject not implemented")
 }
-
-func RegisterPutServer(s *grpc.Server, srv PutServer) {
-	s.RegisterService(&_Put_serviceDesc, srv)
+func (*UnimplementedChunkServerServer) GetObject(*GetRequest, ChunkServer_GetObjectServer) error {
+	return status.Errorf(codes.Unimplemented, "method GetObject not implemented")
 }
 
-func _Put_PutObject_Handler(srv interface{}, stream grpc.ServerStream) error {
-	return srv.(PutServer).PutObject(&putPutObjectServer{stream})
+func RegisterChunkServerServer(s *grpc.Server, srv ChunkServerServer) {
+	s.RegisterService(&_ChunkServer_serviceDesc, srv)
 }
 
-type Put_PutObjectServer interface {
+func _ChunkServer_PutObject_Handler(srv interface{}, stream grpc.ServerStream) error {
+	return srv.(ChunkServerServer).PutObject(&chunkServerPutObjectServer{stream})
+}
+
+type ChunkServer_PutObjectServer interface {
 	SendAndClose(*PutResponse) error
 	Recv() (*PutRequest, error)
 	grpc.ServerStream
 }
 
-type putPutObjectServer struct {
+type chunkServerPutObjectServer struct {
 	grpc.ServerStream
 }
 
-func (x *putPutObjectServer) SendAndClose(m *PutResponse) error {
+func (x *chunkServerPutObjectServer) SendAndClose(m *PutResponse) error {
 	return x.ServerStream.SendMsg(m)
 }
 
-func (x *putPutObjectServer) Recv() (*PutRequest, error) {
+func (x *chunkServerPutObjectServer) Recv() (*PutRequest, error) {
 	m := new(PutRequest)
 	if err := x.ServerStream.RecvMsg(m); err != nil {
 		return nil, err
@@ -454,15 +630,41 @@ func (x *putPutObjectServer) Recv() (*PutRequest, error) {
 	return m, nil
 }
 
-var _Put_serviceDesc = grpc.ServiceDesc{
-	ServiceName: "pb.Put",
-	HandlerType: (*PutServer)(nil),
+func _ChunkServer_GetObject_Handler(srv interface{}, stream grpc.ServerStream) error {
+	m := new(GetRequest)
+	if err := stream.RecvMsg(m); err != nil {
+		return err
+	}
+	return srv.(ChunkServerServer).GetObject(m, &chunkServerGetObjectServer{stream})
+}
+
+type ChunkServer_GetObjectServer interface {
+	Send(*GetResponse) error
+	grpc.ServerStream
+}
+
+type chunkServerGetObjectServer struct {
+	grpc.ServerStream
+}
+
+func (x *chunkServerGetObjectServer) Send(m *GetResponse) error {
+	return x.ServerStream.SendMsg(m)
+}
+
+var _ChunkServer_serviceDesc = grpc.ServiceDesc{
+	ServiceName: "pb.ChunkServer",
+	HandlerType: (*ChunkServerServer)(nil),
 	Methods:     []grpc.MethodDesc{},
 	Streams: []grpc.StreamDesc{
 		{
 			StreamName:    "PutObject",
-			Handler:       _Put_PutObject_Handler,
+			Handler:       _ChunkServer_PutObject_Handler,
 			ClientStreams: true,
+		},
+		{
+			StreamName:    "GetObject",
+			Handler:       _ChunkServer_GetObject_Handler,
+			ServerStreams: true,
 		},
 	},
 	Metadata: "chunkServer.proto",
