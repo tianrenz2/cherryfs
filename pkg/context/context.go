@@ -20,7 +20,8 @@ const (
 
 /*
 	Context contains all the manager-level units in the cluster
-	It also provides the entry to persist and recover the cluster state
+	It provides the entry to persist and recover the cluster state,
+	also responsible for new watching new service registration.
 */
 type Context struct {
 	SGManager *subgroup.SubGroupManager

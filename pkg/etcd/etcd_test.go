@@ -3,10 +3,12 @@ package etcd
 import (
 	"testing"
 	"fmt"
+	"github.com/coreos/etcd/clientv3"
 )
 
 func Test_PutGetPrefix(t *testing.T) {
-
+	client := clientv3.Client{}
+	client.KeepAlive(context.TODO(), resp.ID)
 }
 
 func Test_PutGet(t *testing.T)  {

@@ -8,7 +8,8 @@ import (
 )
 
 
-func (ctx *Context) Watcher() {
+func (ctx *Context) RegistryWatcher() {
+	// Registry Watcher is watching for new (chunk) services for registration
 	watchChan := ctx.EtcdCli.WatchKey(true, HostKeyPrefix)
 
 	for res := range watchChan {
@@ -29,8 +30,12 @@ func (ctx *Context) Watcher() {
 			log.Fatalf("err while registering %v", err)
 		}
 
+		for _, h := range ctx.HManager.Hosts {
+			log.Printf("host: %s\n", h.HostId)
+		}
+
 		for _, d := range ctx.DManager.Dirs {
-			log.Printf("dir size: %d, %d\n", d.UsedSpace, d.TotalSpace)
+			log.Printf("dir %s size: %d, %d\n", d.Path, d.UsedSpace, d.TotalSpace)
 		}
 	}
 }
@@ -43,6 +48,8 @@ func (ctx *Context) RegisterChunk(addr string, info ChunkInfo) error {
 		return err
 	}
 
+	// When a new chunk joins in, first check if subgroup number has satisfied the minimum replica number,
+	// if not, expand the number of subgroups at first
 	if len(ctx.SGManager.SubGroups) < config.MinReplicaNum {
 		newSg, err := ctx.SGManager.InitOneSubgroup(ctx.HManager.Hosts, len(ctx.SGManager.SubGroups), len(ctx.HManager.Hosts) - 1, len(ctx.HManager.Hosts))
 
@@ -52,6 +59,7 @@ func (ctx *Context) RegisterChunk(addr string, info ChunkInfo) error {
 		ctx.SGManager.SubGroups = append(ctx.SGManager.SubGroups, newSg)
 
 	} else {
+		// Find the subgroup which has the minimum of hosts and let the chunk join it
 		var minHostSg = ctx.SGManager.SubGroups[0]
 
 		for sgId, _ := range ctx.SGManager.SubGroups {

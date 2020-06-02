@@ -21,6 +21,7 @@ type ChunkContext struct {
 	Client  pb.ChunkServerClient
 	EtcdCli etcd.EtcdClient
 	LcDirs []*dir.Dir
+	ResponseId int64
 }
 
 type ChunkConfig struct {
@@ -29,13 +30,13 @@ type ChunkConfig struct {
 }
 
 func (chunkCtx *ChunkContext) StartupChunk() (error) {
-	metaAddrs := strings.Split(os.Getenv("ETCD_ADDR"), ",")
+	metaAddrs := strings.Split(os.Getenv("ETCDADDR"), ",")
 	chunkCtx.MetaAddrs = metaAddrs
 	chunkCtx.ObtainHostId()
 
 	chunkCfg, err := chunkCtx.SetupConfig()
 	if err != nil {
-		log.Fatalf("failed to setup configuration")
+		log.Fatalf("failed to setup configuration: %v\n", err)
 	}
 
 	for _, d := range chunkCfg.Dirs {
@@ -56,7 +57,7 @@ func (chunkCtx *ChunkContext) ObtainHostId() (error) {
 	exist := true
 	for exist {
 		hostId := uuid.New().String()
-		if _, err := chunkCtx.EtcdCli.Get(context.HostKeyPrefix + hostId); err != nil {
+		if _, err := chunkCtx.EtcdCli.Get(context.HostKeyPrefix + "/" + hostId); err != nil {
 			chunkCtx.HostId = hostId
 			return nil
 		}
@@ -98,7 +99,9 @@ func (chunkCtx *ChunkContext) RegisterChunkService(config ChunkConfig) error {
 	if err != nil {
 		return err
 	}
-	chunkCtx.EtcdCli.Put(context.HostKeyPrefix + "/" + chunkCtx.HostId, string(infoByte))
+
+	chunkRegistryKey := context.HostKeyPrefix + "/" + chunkCtx.HostId
+	chunkCtx.EtcdCli.Put(chunkRegistryKey, string(infoByte))
 
 	return nil
 }

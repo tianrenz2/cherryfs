@@ -5,28 +5,32 @@ import (
 	"go.etcd.io/etcd/clientv3"
 	"fmt"
 	"context"
+	"strings"
+	"log"
 )
 
 
 type EtcdClient struct {
-	addr string
-	client *clientv3.Client
-	cfg clientv3.Config
-	ctx context.Context
+	addr    []string
+	Client  *clientv3.Client
+	cfg     clientv3.Config
+	ctx     context.Context
 	timeout time.Duration
 }
 
-func (client *EtcdClient)CreateEtcdClient(addr string) (err error) {
-
-	serviceAddr := fmt.Sprintf("http://%s", addr)
+func (client *EtcdClient)CreateEtcdClient(addrs string) (err error) {
+	addrsList := strings.Split(addrs, ",")
+	for index, addr := range addrsList {
+		addrsList[index] = fmt.Sprintf("http://%s", addr)
+	}
 	cfg := clientv3.Config{
-		Endpoints: []string{serviceAddr},
+		Endpoints: addrsList,
 		DialTimeout: 5 * time.Second,
 	}
 
-	client.addr = addr
+	client.addr = addrsList
 	client.cfg = cfg
-	client.client, err = clientv3.New(cfg)
+	client.Client, err = clientv3.New(cfg)
 	client.timeout = 5 * time.Second
 	ctx, _ := context.WithTimeout(context.Background(), client.timeout)
 	client.ctx = ctx
@@ -35,13 +39,13 @@ func (client *EtcdClient)CreateEtcdClient(addr string) (err error) {
 }
 
 func (client *EtcdClient) Put(key, val string) (error) {
-	_, err := client.client.Put(client.ctx, key, val)
+	_, err := client.Client.Put(client.ctx, key, val)
 	return err
 }
 
 func (client *EtcdClient) GetWithPrefix(keyPrefix string) (map[string]string, error){
 
-	resp, err := client.client.Get(client.ctx, keyPrefix, clientv3.WithPrefix())
+	resp, err := client.Client.Get(client.ctx, keyPrefix, clientv3.WithPrefix())
 
 	var res = make(map[string]string)
 	//fmt.Println(resp)
@@ -55,7 +59,7 @@ func (client *EtcdClient) GetWithPrefix(keyPrefix string) (map[string]string, er
 }
 
 func (client *EtcdClient)Get(key string) (string, error) {
-	resp, err := client.client.Get(client.ctx, key)
+	resp, err := client.Client.Get(client.ctx, key)
 
 	if len(resp.Kvs) == 0 {
 		return "", fmt.Errorf("value does not exist")
@@ -70,8 +74,8 @@ func (client *EtcdClient)Get(key string) (string, error) {
 }
 
 func (client *EtcdClient)AmILeader() (bool) {
-	myEndpoint := client.client.Endpoints()[0]
-	status, _ := client.client.Status(client.ctx, myEndpoint)
+	myEndpoint := client.Client.Endpoints()[0]
+	status, _ := client.Client.Status(client.ctx, myEndpoint)
 	return (*status).Header.MemberId == (*status).Leader
 }
 
@@ -81,9 +85,31 @@ func (client *EtcdClient)WatchKey(isPrefix bool, keyword string) clientv3.WatchC
 		opts = append(opts, clientv3.WithPrefix())
 	}
 	fmt.Println(opts)
-	watchChan := client.client.Watch(context.Background(), keyword, opts...)
+	watchChan := client.Client.Watch(context.Background(), keyword, opts...)
 
 	return watchChan
+}
+
+func (client *EtcdClient) MaintainKey(key string, ttl int64) (<-chan *clientv3.LeaseKeepAliveResponse, error){
+	fmt.Printf("maintain %s\n", key)
+	// minimum lease TTL is 5-second
+
+	resp, err := client.Client.Grant(context.TODO(), ttl)
+	if err != nil {
+		log.Fatal(err)
+		return nil, err
+	}
+
+	fmt.Printf("lease id %v\n", resp.ID)
+	_, err = client.Client.Put(context.TODO(), key, string("1"), clientv3.WithLease(resp.ID))
+	if err != nil {
+		log.Fatal(err)
+		return nil, err
+	}
+
+	leaseResp, err := client.Client.KeepAlive(context.TODO(), resp.ID)
+
+	return leaseResp, err
 }
 
 
@@ -92,10 +118,12 @@ func main() {
 	//	Endpoints: []string{"http://127.0.0.1:22379"},
 	//	DialTimeout: 5 * time.Second,
 	//}
-	//cli, err := clientv3.New(cfg)
-	//
-	//if err != nil {
-	//	fmt.Println("Failed to create client: " + err.Error())
-	//}
+	cli := EtcdClient{}
 
+	cli.CreateEtcdClient("127.0.0.1:2379,127.0.0.1:22379,127.0.0.1:32379")
+
+	cli.Put("a", "b")
+
+	val, _ := cli.Get("a")
+	fmt.Println(val)
 }

@@ -125,12 +125,15 @@ func initContext() chunkmanage.ChunkContext {
 
 func main()  {
 	var etcdClient etcd.EtcdClient
-	etcdClient.CreateEtcdClient(os.Getenv("ETCD_ADDR"))
+	etcdClient.CreateEtcdClient(os.Getenv("ETCDADDR"))
 	cCtx := chunkmanage.ChunkContext{
 		EtcdCli:etcdClient,
+		HostId: "xxxxxx",
 	}
 
-	cCtx.StartupChunk()
+	cCtx.StartHeartbeat()
+
+	//cCtx.StartupChunk()
 	StartServer()
 }
 

@@ -29,7 +29,7 @@ func StartServer()  {
 
 	GlobalCtx = initialize.Startup()
 
-	go GlobalCtx.Watcher()
+	go GlobalCtx.RegistryWatcher()
 
 	s := grpc.NewServer()
 	pb.RegisterMetaServiceServer(s, &MetaServer{})
