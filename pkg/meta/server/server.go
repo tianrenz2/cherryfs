@@ -30,6 +30,7 @@ func StartServer()  {
 	GlobalCtx = initialize.Startup()
 
 	go GlobalCtx.RegistryWatcher()
+	go GlobalCtx.HeartbeatWatcher()
 
 	s := grpc.NewServer()
 	pb.RegisterMetaServiceServer(s, &MetaServer{})

@@ -48,7 +48,13 @@ func (allocator *Allocator) AllocSubgroups(object object.Object) ([]subgroup.Sub
 
 	var allocatedSubGroups = make([]subgroup.SubGroup, 0)
 
-	for i := 0; i < ReplicaNum; i ++ {
+	var replicaNum = ReplicaNum
+
+	if len(allocator.Ctx.SGManager.SubGroups) < ReplicaNum {
+		replicaNum = len(allocator.Ctx.SGManager.SubGroups)
+	}
+
+	for i := 0; i < replicaNum; i ++ {
 		allocatedSubGroups = append(allocatedSubGroups, allocator.Ctx.SGManager.GetSubGroupById(modStart))
 		modStart += 1
 		modStart %= subGroupNum

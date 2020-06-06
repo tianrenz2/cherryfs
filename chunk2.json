@@ -1,0 +1,7 @@
+{
+  "addr": "192.168.30.2:50511",
+  "dirs": [
+    "/tmp/cherryfs/4",
+    "/tmp/cherryfs/1"
+  ]
+}

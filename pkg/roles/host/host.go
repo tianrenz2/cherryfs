@@ -36,7 +36,7 @@ func (hostMg *HostManager) GetHostByHostId(HostId string) (Host, error) {
 	if host, ok := hostMg.hostMap[HostId]; ok {
 		return *host, nil
 	}
-	return Host{}, fmt.Errorf("could not find host for %s", HostId)
+	return Host{}, fmt.Errorf("NotFound")
 }
 
 func (hostMg *HostManager) InitHostMap() (error) {
@@ -71,8 +71,8 @@ func (hostMg *HostManager) InitAllHosts(configHosts []ConfigHost, dirManager *di
 	return nil
 }
 
-func (hostMg *HostManager) AddHost(hostAddr string, hostDirs []dir.Dir, dirManager *dir.DirManager) (string, error) {
-	host, err := hostMg.InitNewHost(hostAddr, hostDirs, dirManager)
+func (hostMg *HostManager) AddHost(hostId, hostAddr string, hostDirs []dir.Dir, dirManager *dir.DirManager) (string, error) {
+	host, err := hostMg.InitNewHost(hostId, hostAddr, hostDirs, dirManager)
 	if err != nil {
 		return "", fmt.Errorf("%v", err)
 	}
@@ -81,8 +81,7 @@ func (hostMg *HostManager) AddHost(hostAddr string, hostDirs []dir.Dir, dirManag
 	return host.HostId, nil
 }
 
-func (hostMg *HostManager) InitNewHost(hostAddr string, hostDirs []dir.Dir, dirManager *dir.DirManager) (*Host, error)  {
-	hostId := uuid.New().String()
+func (hostMg *HostManager) InitNewHost(hostId, hostAddr string, hostDirs []dir.Dir, dirManager *dir.DirManager) (*Host, error)  {
 	dirs := make([]string, 0)
 	for _, hostDir := range hostDirs {
 		id, _ := dirManager.CreateDir(hostDir.Path, hostId)

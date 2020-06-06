@@ -29,10 +29,21 @@ type ChunkConfig struct {
 	Dirs []string
 }
 
+
 func (chunkCtx *ChunkContext) StartupChunk() (error) {
 	metaAddrs := strings.Split(os.Getenv("ETCDADDR"), ",")
 	chunkCtx.MetaAddrs = metaAddrs
-	chunkCtx.ObtainHostId()
+
+	hostFile, err := os.Open(os.Getenv("HOSTIDPATH"))
+
+	if os.IsNotExist(err) {
+		chunkCtx.ObtainHostId()
+		log.Printf("generate a new host id: %s\n", chunkCtx.HostId)
+	}else {
+		b, _ := ioutil.ReadAll(hostFile)
+		log.Printf("existing hostid: %s\n", string(b))
+		chunkCtx.HostId = string(b)
+	}
 
 	chunkCfg, err := chunkCtx.SetupConfig()
 	if err != nil {
@@ -59,6 +70,13 @@ func (chunkCtx *ChunkContext) ObtainHostId() (error) {
 		hostId := uuid.New().String()
 		if _, err := chunkCtx.EtcdCli.Get(context.HostKeyPrefix + "/" + hostId); err != nil {
 			chunkCtx.HostId = hostId
+			f, err := os.Create(os.Getenv("HOSTIDPATH"))
+			_, err = f.WriteString(hostId)
+
+			if err != nil {
+				log.Fatalf("failed to save the host id\n")
+			}
+
 			return nil
 		}
 	}
@@ -90,9 +108,12 @@ func (chunkCtx *ChunkContext) RegisterChunkService(config ChunkConfig) error {
 	}
 
 	chunkInfo := context.ChunkInfo{
+		HostId:chunkCtx.HostId,
 		Addr: chunkCtx.Address,
 		Dirs:lcDirs,
 	}
+
+	log.Printf("%v\n", chunkInfo)
 
 	infoByte, err := json.Marshal(chunkInfo)
 

@@ -10,6 +10,7 @@ import (
 	"os"
 	"io"
 	"bytes"
+	"io/ioutil"
 )
 
 const (
@@ -62,6 +63,11 @@ func (client *Client)Put(name string, objPath string) (error) {
 
 	targets := resp.Targets
 
+	for _, t := range targets{
+		fmt.Printf("%s, %s \n", t.DestAddr, t.DestDir)
+	}
+
+
 	_, err = client.UploadObject(context.Background(), objPath, targets, name, objectHash)
 
 	if err != nil {
@@ -75,7 +81,7 @@ func (client *Client)UploadObject(ctx context.Context, f string, targets []*pb.T
 	writing := true
 	file, err := os.Open(f)
 
-	objName := file.Name()
+	objName := name
 
 	client.MakeChunkConn(targets[0].DestAddr)
 	stream, err := client.ChunkClient.PutObject(ctx)
@@ -157,23 +163,20 @@ func (client *Client) Get(name, outputFile string) (error) {
 
 func (client *Client) DownloadObject(addr, dir, name, outputFile string) (error) {
 	client.MakeChunkConn(addr)
-	stream, err := client.ChunkClient.GetObject( context.Background(), &pb.GetRequest{Name: name, Dir: dir})
+	stream, err := client.ChunkClient.GetObject(context.Background(), &pb.GetRequest{Name: name, Dir: dir})
 
 	if err != nil {
 		return err
 	}
-
-	outFile, err := os.Open(outputFile)
+	os.Create(outputFile)
 
 	if err != nil {
 		return fmt.Errorf("failed to create file: %v", err)
 	}
 
 	data := bytes.Buffer{}
-
 	for {
 		recChunk, err := stream.Recv()
-
 		if err != nil {
 			if err == io.EOF {
 				break
@@ -185,7 +188,7 @@ func (client *Client) DownloadObject(addr, dir, name, outputFile string) (error)
 		}
 	}
 
-	_, err = data.WriteTo(outFile)
+	ioutil.WriteFile(outputFile, data.Bytes(), 0644)
 
 	if err != nil {
 		return fmt.Errorf("%v", err)
@@ -208,7 +211,6 @@ func main()  {
 	ObjectPath := os.Args[2]
 
 	//err := cli.Put(ObjectKey, ObjectPath)
-
 	err := cli.Get(ObjectKey, ObjectPath)
 
 	if err != nil {

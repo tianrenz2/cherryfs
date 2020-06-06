@@ -11,10 +11,9 @@ import (
 
 
 type EtcdClient struct {
-	addr    []string
+	addrs   []string
 	Client  *clientv3.Client
 	cfg     clientv3.Config
-	ctx     context.Context
 	timeout time.Duration
 }
 
@@ -28,24 +27,22 @@ func (client *EtcdClient)CreateEtcdClient(addrs string) (err error) {
 		DialTimeout: 5 * time.Second,
 	}
 
-	client.addr = addrsList
+	client.addrs = addrsList
 	client.cfg = cfg
 	client.Client, err = clientv3.New(cfg)
 	client.timeout = 5 * time.Second
-	ctx, _ := context.WithTimeout(context.Background(), client.timeout)
-	client.ctx = ctx
-
 	return
 }
 
 func (client *EtcdClient) Put(key, val string) (error) {
-	_, err := client.Client.Put(client.ctx, key, val)
+	ctx, _ := context.WithTimeout(context.Background(), client.timeout)
+	_, err := client.Client.Put(ctx, key, val)
 	return err
 }
 
 func (client *EtcdClient) GetWithPrefix(keyPrefix string) (map[string]string, error){
-
-	resp, err := client.Client.Get(client.ctx, keyPrefix, clientv3.WithPrefix())
+	ctx, _ := context.WithTimeout(context.Background(), client.timeout)
+	resp, err := client.Client.Get(ctx, keyPrefix, clientv3.WithPrefix())
 
 	var res = make(map[string]string)
 	//fmt.Println(resp)
@@ -59,10 +56,10 @@ func (client *EtcdClient) GetWithPrefix(keyPrefix string) (map[string]string, er
 }
 
 func (client *EtcdClient)Get(key string) (string, error) {
-	resp, err := client.Client.Get(client.ctx, key)
-
+	ctx, _ := context.WithTimeout(context.Background(), client.timeout)
+	resp, err := client.Client.Get(ctx, key)
 	if len(resp.Kvs) == 0 {
-		return "", fmt.Errorf("value does not exist")
+		return "", fmt.Errorf("NoExist")
 	}
 
 	var val = ""
@@ -75,7 +72,8 @@ func (client *EtcdClient)Get(key string) (string, error) {
 
 func (client *EtcdClient)AmILeader() (bool) {
 	myEndpoint := client.Client.Endpoints()[0]
-	status, _ := client.Client.Status(client.ctx, myEndpoint)
+	ctx, _ := context.WithTimeout(context.Background(), client.timeout)
+	status, _ := client.Client.Status(ctx, myEndpoint)
 	return (*status).Header.MemberId == (*status).Leader
 }
 

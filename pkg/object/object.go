@@ -2,7 +2,6 @@ package object
 
 import (
 	"cherryfs/pkg/comm/pb"
-	//"cherryfs/pkg/meta/server"
 	"encoding/json"
 	"cherryfs/pkg/context"
 	"fmt"
@@ -57,6 +56,7 @@ func GetObjectTarget(name string, ctx context.Context) (*pb.Target, error) {
 
 	err = json.Unmarshal([]byte(info), &object)
 
+	fmt.Printf("info: %v\n", info)
 	if err != nil {
 		return nil, fmt.Errorf("failed to parse the object: %v", err)
 	}
@@ -65,7 +65,7 @@ func GetObjectTarget(name string, ctx context.Context) (*pb.Target, error) {
 	chosenIndex := 0
 
 	for {
-		getKey := ObjectKeyPrefix + "/" + name + "/" + object.Targets[chosenIndex].DestId
+		getKey := ObjectKeyPrefix + name + "/" + object.Targets[chosenIndex].DestId
 
 		fmt.Printf("Get by key: %s\n", getKey)
 		state, _ = ctx.EtcdCli.Get(getKey)

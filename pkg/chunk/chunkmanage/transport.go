@@ -16,6 +16,10 @@ func (chunkCtx *ChunkContext) SendAsRec(writing *bool, buffer *bytes.Buffer, inf
 		}
 		newTargets = append(newTargets, target)
 	}
+	fmt.Printf("chunk: %s\n", chunkCtx.Address)
+	for _, t := range newTargets{
+		fmt.Printf("send to target: %s, dir: %s\n", t.DestAddr, t.DestDir)
+	}
 
 	if len(newTargets) == 0 {
 		return nil
@@ -72,6 +76,7 @@ func (chunkCtx *ChunkContext) SendAsRec(writing *bool, buffer *bytes.Buffer, inf
 
 	_, e := stream.CloseAndRecv()
 
+	fmt.Printf("stream %v\n", e)
 	if e != nil {
 		return e
 	}

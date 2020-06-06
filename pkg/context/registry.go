@@ -1,7 +1,6 @@
 package context
 
 import (
-	"strings"
 	"encoding/json"
 	"log"
 	"cherryfs/pkg/config"
@@ -13,10 +12,7 @@ func (ctx *Context) RegistryWatcher() {
 	watchChan := ctx.EtcdCli.WatchKey(true, HostKeyPrefix)
 
 	for res := range watchChan {
-		key := string(res.Events[0].Kv.Key)
 		val := res.Events[0].Kv.Value
-		addrSlices := strings.Split(key, "/")
-		addr := addrSlices[len(addrSlices) - 1]
 		var chunkInfo ChunkInfo
 
 		err := json.Unmarshal(val, &chunkInfo)
@@ -25,7 +21,7 @@ func (ctx *Context) RegistryWatcher() {
 			log.Fatalf("err while parsing data: %v\n", err)
 		}
 
-		err = ctx.RegisterChunk(addr, chunkInfo)
+		err = ctx.RegisterChunk(chunkInfo)
 		if err != nil {
 			log.Fatalf("err while registering %v", err)
 		}
@@ -40,9 +36,15 @@ func (ctx *Context) RegistryWatcher() {
 	}
 }
 
-func (ctx *Context) RegisterChunk(addr string, info ChunkInfo) error {
-	log.Printf("register chunk %s \n", addr)
-	hostId, err := ctx.HManager.AddHost(addr, info.Dirs, ctx.DManager)
+func (ctx *Context) RegisterChunk(info ChunkInfo) error {
+	log.Printf("register chunk id: %s, addr: %s\n", info.HostId, info.Addr)
+
+	if _, err := ctx.HManager.GetHostByHostId(info.HostId); err == nil {
+		log.Printf("chunk %s comes back\n", info.HostId)
+		return nil
+	}
+
+	hostId, err := ctx.HManager.AddHost(info.HostId, info.Addr, info.Dirs, ctx.DManager)
 
 	if err != nil {
 		return err

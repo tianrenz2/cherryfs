@@ -31,7 +31,7 @@ func (lcObject *LocalObject) PostStore(ctx chunkmanage.ChunkContext) error {
 
 	putKey := ObjectKeyPrefix + lcObject.Name + "/" + ctx.HostId
 
-	ctx.EtcdCli.CreateEtcdClient(os.Getenv("ETCD_ADDR"))
+	ctx.EtcdCli.CreateEtcdClient(os.Getenv("ETCDADDR"))
 	err := ctx.EtcdCli.Put(putKey, "1")
 
 	fmt.Printf("put %s\n", putKey)

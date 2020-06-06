@@ -21,16 +21,8 @@ type ChunkServer struct {
 var chunkCtx = chunkmanage.ChunkContext{}
 var address	= ""
 
-
-var chunkContext chunkmanage.ChunkContext
-
 func StartServer()  {
-	chunkContext = initContext()
-
-	address = os.Getenv("ADDR")
-	port := os.Getenv("PORT")
-	chunkCtx.Address = address + ":" + port
-
+	//chunkContext = initContext()
 	lis, err := net.Listen("tcp", chunkCtx.Address)
 	if err != nil {
 		log.Fatalf("Failed to listen: %v", err)
@@ -55,9 +47,7 @@ func (s *ChunkServer) PutObject(stream pb.ChunkServer_PutObjectServer) (error) {
 	targets := info.GetInfo().Targets
 	name := info.GetInfo().Name
 	hash := info.GetInfo().Hash
-
-	fmt.Printf("Received: %s\n", name)
-
+	
 	data := bytes.Buffer{}
 
 	var writing = true
@@ -90,7 +80,7 @@ func (s *ChunkServer) PutObject(stream pb.ChunkServer_PutObjectServer) (error) {
 		lcObject := object.LocalObject{Name:name, Size: 10, Hash: hash, Path:selfTarget.DestDir}
 		err = lcObject.ObjectStore(data)
 		if err == nil{
-			err = lcObject.PostStore(chunkContext)
+			err = lcObject.PostStore(chunkCtx)
 		} else {
 			fmt.Printf("error happened %v\n", err)
 		}
@@ -111,9 +101,46 @@ func (s *ChunkServer) PutObject(stream pb.ChunkServer_PutObjectServer) (error) {
 	return err
 }
 
+func (s *ChunkServer) GetObject(getRequest *pb.GetRequest, responser pb.ChunkServer_GetObjectServer) (error) {
+	dir := getRequest.Dir
+	name := getRequest.Name
+
+	file := dir + "/" + name
+	f, _ := os.Open(file)
+	buf := make([]byte, 1024)
+
+	sending := true
+
+	for sending {
+		n, err := f.Read(buf)
+		if err != nil {
+			if err == io.EOF {
+				sending = false
+				err = nil
+				break
+			}
+			err = fmt.Errorf("errored while copying from file to buf")
+		}
+
+		err = responser.Send(
+			& pb.GetResponse{
+				Content: buf[:n],
+			},
+		)
+
+		if err != nil {
+			err = fmt.Errorf("failed to send chunkmanage via stream: %v", err)
+			return err
+		}
+	}
+
+	return nil
+}
+
+
 func initContext() chunkmanage.ChunkContext {
 	var etcdClient etcd.EtcdClient
-	etcdClient.CreateEtcdClient(os.Getenv("ETCD_ADDR"))
+	etcdClient.CreateEtcdClient(os.Getenv("ETCDADDR"))
 
 	newCtx := chunkmanage.ChunkContext{
 		EtcdCli: etcdClient,
@@ -126,19 +153,20 @@ func initContext() chunkmanage.ChunkContext {
 func main()  {
 	var etcdClient etcd.EtcdClient
 	etcdClient.CreateEtcdClient(os.Getenv("ETCDADDR"))
-	cCtx := chunkmanage.ChunkContext{
-		EtcdCli:etcdClient,
-		HostId: "xxxxxx",
-	}
+	chunkCtx.EtcdCli = etcdClient
 
-	cCtx.StartHeartbeat()
+	address = os.Getenv("ADDR")
+	port := os.Getenv("PORT")
+	chunkCtx.Address = address + ":" + port
 
-	//cCtx.StartupChunk()
+	chunkCtx.StartupChunk()
+	go chunkCtx.StartHeartbeat()
+
 	StartServer()
 }
 
 func testPut() {
 	lcobj := object.LocalObject{Name: "abc"}
-	err := lcobj.PostStore(chunkContext)
+	err := lcobj.PostStore(chunkCtx)
 	fmt.Println(err)
 }
