@@ -55,6 +55,21 @@ func (client *EtcdClient) GetWithPrefix(keyPrefix string) (map[string]string, er
 	return res, nil
 }
 
+func (client *EtcdClient) GetWithSuffix(keySuffix string) (map[string]string, error){
+	ctx, _ := context.WithTimeout(context.Background(), client.timeout)
+	resp, err := client.Client.Get(ctx, keySuffix, clientv3.WithRange(keySuffix))
+	fmt.Printf("%v\n", resp.Kvs)
+	var res = make(map[string]string)
+	//fmt.Println(resp)
+	if err == nil{
+		//val := string(resp.Kvs)
+		for _, kv := range resp.Kvs {
+			res[string(kv.Key)] = string(kv.Value)
+		}
+	}
+	return res, nil
+}
+
 func (client *EtcdClient)Get(key string) (string, error) {
 	ctx, _ := context.WithTimeout(context.Background(), client.timeout)
 	resp, err := client.Client.Get(ctx, key)
@@ -120,8 +135,8 @@ func main() {
 
 	cli.CreateEtcdClient("127.0.0.1:2379,127.0.0.1:22379,127.0.0.1:32379")
 
-	cli.Put("a", "b")
+	cli.Put("abc/bbc", "b")
 
-	val, _ := cli.Get("a")
+	val, _ := cli.GetWithSuffix("bbc")
 	fmt.Println(val)
 }

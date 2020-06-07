@@ -5,7 +5,7 @@ import (
 	"os"
 	"path"
 	"fmt"
-	"cherryfs/pkg/chunk/chunkmanage"
+	"cherryfs/pkg/etcd"
 )
 
 type LocalObject struct {
@@ -13,6 +13,7 @@ type LocalObject struct {
 	Size int64
 	Hash string
 	Path string
+	HostId string
 }
 
 func (lcObject *LocalObject) ObjectStore(data bytes.Buffer) (error) {
@@ -27,15 +28,12 @@ func (lcObject *LocalObject) ObjectStore(data bytes.Buffer) (error) {
 	return nil
 }
 
-func (lcObject *LocalObject) PostStore(ctx chunkmanage.ChunkContext) error {
+func (lcObject *LocalObject) PostStore(client etcd.EtcdClient) error {
+	putKey := fmt.Sprintf("%s/%s/%s", ObjectKeyPrefix, lcObject.HostId, lcObject.Name)
 
-	putKey := ObjectKeyPrefix + lcObject.Name + "/" + ctx.HostId
+	//ctx.EtcdCli.CreateEtcdClient(os.Getenv("ETCDADDR"))
+	err := client.Put(putKey, "1")
 
-	ctx.EtcdCli.CreateEtcdClient(os.Getenv("ETCDADDR"))
-	err := ctx.EtcdCli.Put(putKey, "1")
-
-	fmt.Printf("put %s\n", putKey)
-
-	fmt.Println(putKey)
+	fmt.Printf("mark %s as put\n", putKey)
 	return err
 }

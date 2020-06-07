@@ -210,8 +210,8 @@ func main()  {
 	ObjectKey := os.Args[1]
 	ObjectPath := os.Args[2]
 
-	//err := cli.Put(ObjectKey, ObjectPath)
-	err := cli.Get(ObjectKey, ObjectPath)
+	err := cli.Put(ObjectKey, ObjectPath)
+	//err := cli.Get(ObjectKey, ObjectPath)
 
 	if err != nil {
 		fmt.Errorf("failed to put object: %v\n", err)

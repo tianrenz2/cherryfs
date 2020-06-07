@@ -212,3 +212,5 @@ func (ctx *Context) DecodeStruct(encodedHash string) ([]byte, error) {
 
 	return bytes, nil
 }
+
+var GlobalCtx *Context

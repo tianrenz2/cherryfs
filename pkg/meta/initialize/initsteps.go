@@ -43,7 +43,8 @@ func LoadHosts(configHosts []host.ConfigHost) []host.Host {
 		hosts = append(hosts, host.Host{
 			Hostname: configHost.Hostname,
 			Address: configHost.Address,
-			Dirs:dirs,
+			Dirs: dirs,
+			HostState: host.HEALTHY,
 		})
 	}
 	return hosts

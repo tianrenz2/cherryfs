@@ -6,6 +6,7 @@ import (
 	"cherryfs/pkg/meta/allocator"
 	"context"
 	"fmt"
+	context2 "cherryfs/pkg/context"
 )
 
 
@@ -16,7 +17,7 @@ func (s *MetaServer)AskPut(ctx context.Context, askPutReq *pb.AskPutRequest) (*p
 
 	obj := object.Object{Name:objName, Size:int64(objSize), Hash:objHash}
 
-	alloc := allocator.Allocator{Policy: allocator.ReplicaPolicy, Ctx: GlobalCtx}
+	alloc := allocator.Allocator{Policy: allocator.ReplicaPolicy, Ctx: *context2.GlobalCtx}
 
 	targets, err := alloc.AllocTargets(obj)
 
@@ -34,7 +35,7 @@ func (s *MetaServer)AskPut(ctx context.Context, askPutReq *pb.AskPutRequest) (*p
 	}
 
 	obj.Targets = respTargets
-	obj.PutMeta(GlobalCtx)
+	obj.PutMeta(context2.GlobalCtx.EtcdCli)
 
 	var resp = pb.AskPutResponse{Status:status, Targets:respTargets}
 

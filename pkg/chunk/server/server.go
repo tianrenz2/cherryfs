@@ -12,23 +12,23 @@ import (
 	"cherryfs/pkg/chunk/chunkmanage"
 	"os"
 	"cherryfs/pkg/etcd"
+	"cherryfs/pkg/context"
 )
 
 type ChunkServer struct {
 	pb.UnimplementedChunkServerServer
 }
 
-var chunkCtx = chunkmanage.ChunkContext{}
 var address	= ""
 
 func StartServer()  {
 	//chunkContext = initContext()
-	lis, err := net.Listen("tcp", chunkCtx.Address)
+	lis, err := net.Listen("tcp", context.GlobalChunkCtx.Address)
 	if err != nil {
 		log.Fatalf("Failed to listen: %v", err)
 	}
 
-	fmt.Printf("Server Address: %s\n", chunkCtx.Address)
+	fmt.Printf("Server Address: %s\n", context.GlobalChunkCtx.Address)
 
 	s := grpc.NewServer()
 	pb.RegisterChunkServerServer(s, &ChunkServer{})
@@ -51,7 +51,7 @@ func (s *ChunkServer) PutObject(stream pb.ChunkServer_PutObjectServer) (error) {
 	data := bytes.Buffer{}
 
 	var writing = true
-	go chunkCtx.SendAsRec(&writing, &data, info.GetInfo(), targets)
+	go chunkmanage.SendAsRec(&writing, &data, info.GetInfo(), targets)
 	for {
 		recChunk, err := stream.Recv()
 
@@ -70,20 +70,69 @@ func (s *ChunkServer) PutObject(stream pb.ChunkServer_PutObjectServer) (error) {
 
 	var selfTarget *pb.Target
 	for _, target := range targets {
-		if target.DestAddr == chunkCtx.Address {
+		if target.DestAddr == context.GlobalChunkCtx.Address {
 			selfTarget = target
 		}
 	}
 
 	if selfTarget != nil {
 		fmt.Printf("Writing to %s\n", selfTarget.DestDir)
-		lcObject := object.LocalObject{Name:name, Size: 10, Hash: hash, Path:selfTarget.DestDir}
+		lcObject := object.LocalObject{Name:name, Size: 10, Hash: hash, Path:selfTarget.DestDir, HostId: context.GlobalChunkCtx.HostId}
 		err = lcObject.ObjectStore(data)
 		if err == nil{
-			err = lcObject.PostStore(chunkCtx)
+			err = lcObject.PostStore(context.GlobalChunkCtx.EtcdCli)
 		} else {
 			fmt.Printf("error happened %v\n", err)
 		}
+	}
+	var msg = "Success"
+	var code = 0
+
+	if err != nil {
+		msg = err.Error()
+		code = 1
+	}
+
+	err = stream.SendAndClose(&pb.PutResponse{
+		Message: msg,
+		Code:   int32(code),
+	})
+
+	return err
+}
+
+func (s *ChunkServer) CopyObject(stream pb.ChunkServer_CopyObjectServer) (error) {
+	info, err := stream.Recv()
+	if err != nil {
+		return err
+	}
+	name := info.GetInfo().Name
+	hash := info.GetInfo().Hash
+
+	data := bytes.Buffer{}
+
+	for {
+		recChunk, err := stream.Recv()
+
+		if err != nil {
+			if err == io.EOF {
+				break
+			}
+			err = fmt.Errorf("failed unexpectadely while reading chunks from stream")
+			return err
+		}else {
+			data.Write(recChunk.GetContent())
+		}
+	}
+
+	selfTarget := info.GetInfo().Targets[0]
+	fmt.Printf("Writing to %s\n", selfTarget.DestDir)
+	lcObject := object.LocalObject{Name:name, Size: 10, Hash: hash, Path: selfTarget.DestDir, HostId: context.GlobalChunkCtx.HostId}
+	err = lcObject.ObjectStore(data)
+	if err == nil{
+		err = lcObject.PostStore(context.GlobalChunkCtx.EtcdCli)
+	} else {
+		fmt.Printf("error happened %v\n", err)
 	}
 	var msg = "Success"
 	var code = 0
@@ -137,36 +186,25 @@ func (s *ChunkServer) GetObject(getRequest *pb.GetRequest, responser pb.ChunkSer
 	return nil
 }
 
-
-func initContext() chunkmanage.ChunkContext {
-	var etcdClient etcd.EtcdClient
-	etcdClient.CreateEtcdClient(os.Getenv("ETCDADDR"))
-
-	newCtx := chunkmanage.ChunkContext{
-		EtcdCli: etcdClient,
-	}
-
-	return newCtx
-}
-
-
 func main()  {
 	var etcdClient etcd.EtcdClient
 	etcdClient.CreateEtcdClient(os.Getenv("ETCDADDR"))
-	chunkCtx.EtcdCli = etcdClient
+	context.GlobalChunkCtx = &context.ChunkContext{}
+	context.GlobalChunkCtx.EtcdCli = etcdClient
+	//context.GlobalChunkCtx.EtcdCli.CreateEtcdClient(os.Getenv("ETCDADDR"))
 
 	address = os.Getenv("ADDR")
 	port := os.Getenv("PORT")
-	chunkCtx.Address = address + ":" + port
+	context.GlobalChunkCtx.Address = address + ":" + port
 
-	chunkCtx.StartupChunk()
-	go chunkCtx.StartHeartbeat()
+	chunkmanage.StartupChunk()
+	go chunkmanage.StartHeartbeat()
 
 	StartServer()
 }
 
 func testPut() {
 	lcobj := object.LocalObject{Name: "abc"}
-	err := lcobj.PostStore(chunkCtx)
+	err := lcobj.PostStore(context.GlobalChunkCtx.EtcdCli)
 	fmt.Println(err)
 }

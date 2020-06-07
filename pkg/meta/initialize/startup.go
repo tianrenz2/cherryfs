@@ -8,9 +8,10 @@ import (
 	"cherryfs/pkg/context"
 	"math/rand"
 	"os"
+	"cherryfs/pkg/etcd"
 )
 
-func Startup() (context.Context) {
+func Startup() (*context.Context) {
 
 	var dirSpaces = []int64 {1, 5, 7, 10}
 
@@ -46,14 +47,16 @@ func Startup() (context.Context) {
 	//}
 	fmt.Printf("created cluster successfully")
 
-	return ctx
+	return &ctx
 }
 
 func LoadClusterConfig() (context.Context) {
 	ctx := context.Context{}
 	ctx.InitManagers()
-
+	ctx.EtcdCli = etcd.EtcdClient{}
 	ctx.EtcdCli.CreateEtcdClient(os.Getenv("ETCDADDR"))
+
+	//ctx.EtcdCli.CreateEtcdClient(os.Getenv("ETCDADDR"))
 	err := ctx.RecoverCluster()
 
 	if err != nil{

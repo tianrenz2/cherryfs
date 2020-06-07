@@ -6,17 +6,18 @@ import (
 	"google.golang.org/grpc"
 	"fmt"
 	"context"
+	context2 "cherryfs/pkg/context"
 )
 
-func (chunkCtx *ChunkContext) SendAsRec(writing *bool, buffer *bytes.Buffer, info *pb.ObjectInfo, targets []*pb.Target) (error) {
+func SendAsRec(writing *bool, buffer *bytes.Buffer, info *pb.ObjectInfo, targets []*pb.Target) (error) {
 	var newTargets = make([]*pb.Target, 0)
 	for _, target := range targets {
-		if target.DestAddr == chunkCtx.Address {
+		if target.DestAddr == context2.GlobalChunkCtx.Address {
 			continue
 		}
 		newTargets = append(newTargets, target)
 	}
-	fmt.Printf("chunk: %s\n", chunkCtx.Address)
+	fmt.Printf("chunk: %s\n", context2.GlobalChunkCtx.Address)
 	for _, t := range newTargets{
 		fmt.Printf("send to target: %s, dir: %s\n", t.DestAddr, t.DestDir)
 	}
@@ -28,9 +29,9 @@ func (chunkCtx *ChunkContext) SendAsRec(writing *bool, buffer *bytes.Buffer, inf
 	nextAddr := newTargets[0].DestAddr
 
 	conn, _ := grpc.Dial(nextAddr, grpc.WithInsecure(), grpc.WithBlock())
-	chunkCtx.Client = pb.NewChunkServerClient(conn)
+	context2.GlobalChunkCtx.Client = pb.NewChunkServerClient(conn)
 
-	stream, err := chunkCtx.Client.PutObject(context.Background())
+	stream, err := context2.GlobalChunkCtx.Client.PutObject(context.Background())
 
 	if err != nil {
 		return fmt.Errorf("%v", err)

@@ -2,6 +2,7 @@ package chunkmanage
 
 import (
 	"syscall"
+	"cherryfs/pkg/context"
 )
 
 type DirStatus struct {
@@ -10,11 +11,11 @@ type DirStatus struct {
 	Free int64 `json:"free"`
 }
 
-func (chunkCtx *ChunkContext) CollectDirStats()  {
-	for i, dir := range chunkCtx.LcDirs {
+func CollectDirStats()  {
+	for i, dir := range context.GlobalChunkCtx.LcDirs {
 		dirStatus := DirUsage(dir.Path)
-		chunkCtx.LcDirs[i].TotalSpace = dirStatus.All
-		chunkCtx.LcDirs[i].UsedSpace = dirStatus.Used
+		context.GlobalChunkCtx.LcDirs[i].TotalSpace = dirStatus.All
+		context.GlobalChunkCtx.LcDirs[i].UsedSpace = dirStatus.Used
 	}
 	return
 }

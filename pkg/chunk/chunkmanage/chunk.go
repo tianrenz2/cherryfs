@@ -1,128 +1,45 @@
 package chunkmanage
 
 import (
-	"cherryfs/pkg/comm/pb"
-	"cherryfs/pkg/roles/dir"
+	"strings"
 	"os"
 	"io/ioutil"
-	"log"
-	"encoding/json"
-	"fmt"
-	"strings"
-	"github.com/google/uuid"
-	"cherryfs/pkg/etcd"
+	"cherryfs/pkg/roles/dir"
 	"cherryfs/pkg/context"
+	"log"
 )
 
-type ChunkContext struct {
-	HostId string
-	MetaAddrs []string
-	Address string
-	Client  pb.ChunkServerClient
-	EtcdCli etcd.EtcdClient
-	LcDirs []*dir.Dir
-	ResponseId int64
-}
+func StartupChunk() (error) {
 
-type ChunkConfig struct {
-	Addr string
-	Dirs []string
-}
-
-
-func (chunkCtx *ChunkContext) StartupChunk() (error) {
 	metaAddrs := strings.Split(os.Getenv("ETCDADDR"), ",")
-	chunkCtx.MetaAddrs = metaAddrs
+	context.GlobalChunkCtx.MetaAddrs = metaAddrs
 
 	hostFile, err := os.Open(os.Getenv("HOSTIDPATH"))
 
 	if os.IsNotExist(err) {
-		chunkCtx.ObtainHostId()
-		log.Printf("generate a new host id: %s\n", chunkCtx.HostId)
+		context.GlobalChunkCtx.ObtainHostId()
+		log.Printf("generate a new host id: %s\n", context.GlobalChunkCtx.HostId)
 	}else {
 		b, _ := ioutil.ReadAll(hostFile)
 		log.Printf("existing hostid: %s\n", string(b))
-		chunkCtx.HostId = string(b)
+		context.GlobalChunkCtx.HostId = string(b)
 	}
 
-	chunkCfg, err := chunkCtx.SetupConfig()
+	chunkCfg, err := context.GlobalChunkCtx.SetupConfig()
 	if err != nil {
 		log.Fatalf("failed to setup configuration: %v\n", err)
 	}
 
 	for _, d := range chunkCfg.Dirs {
-		chunkCtx.LcDirs = append(chunkCtx.LcDirs, &dir.Dir{
+		context.GlobalChunkCtx.LcDirs = append(context.GlobalChunkCtx.LcDirs, &dir.Dir{
 			Path: d,
-			HostId:chunkCtx.HostId,
+			HostId:context.GlobalChunkCtx.HostId,
 			UsedSpace: 0,
 			TotalSpace: 0,
 		})
 	}
-	chunkCtx.CollectDirStats()
-	chunkCtx.RegisterChunkService(chunkCfg)
-
-	return nil
-}
-
-func (chunkCtx *ChunkContext) ObtainHostId() (error) {
-	exist := true
-	for exist {
-		hostId := uuid.New().String()
-		if _, err := chunkCtx.EtcdCli.Get(context.HostKeyPrefix + "/" + hostId); err != nil {
-			chunkCtx.HostId = hostId
-			f, err := os.Create(os.Getenv("HOSTIDPATH"))
-			_, err = f.WriteString(hostId)
-
-			if err != nil {
-				log.Fatalf("failed to save the host id\n")
-			}
-
-			return nil
-		}
-	}
-	return nil
-}
-
-func (chunkCtx *ChunkContext) SetupConfig() (ChunkConfig, error) {
-	configPath := os.Getenv("CONF_PATH")
-	data, err := ioutil.ReadFile(configPath)
-	if err != nil {
-		return ChunkConfig{}, fmt.Errorf("failed to load the config file: %v", err)
-	}
-	var config = ChunkConfig{}
-
-	err = json.Unmarshal([]byte(data), &config)
-	if err != nil {
-		log.Fatalf("failed to read the configration file: %s\n", configPath)
-	}
-
-	return config, nil
-}
-
-func (chunkCtx *ChunkContext) RegisterChunkService(config ChunkConfig) error {
-
-	lcDirs := make([]dir.Dir, 0)
-
-	for _, d := range chunkCtx.LcDirs {
-		lcDirs = append(lcDirs, *d)
-	}
-
-	chunkInfo := context.ChunkInfo{
-		HostId:chunkCtx.HostId,
-		Addr: chunkCtx.Address,
-		Dirs:lcDirs,
-	}
-
-	log.Printf("%v\n", chunkInfo)
-
-	infoByte, err := json.Marshal(chunkInfo)
-
-	if err != nil {
-		return err
-	}
-
-	chunkRegistryKey := context.HostKeyPrefix + "/" + chunkCtx.HostId
-	chunkCtx.EtcdCli.Put(chunkRegistryKey, string(infoByte))
+	CollectDirStats()
+	context.GlobalChunkCtx.RegisterChunkService(chunkCfg)
 
 	return nil
 }

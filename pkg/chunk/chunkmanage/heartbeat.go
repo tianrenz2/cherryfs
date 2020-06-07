@@ -4,15 +4,16 @@ import (
 	"fmt"
 	"log"
 	"errors"
+	"cherryfs/pkg/meta/watchservice"
 	"cherryfs/pkg/context"
 )
 
 
-func (chunkCtx *ChunkContext) StartHeartbeat() (error) {
+func StartHeartbeat() (error) {
 	// Chunk services maintain their heartbeat maintaining a etcd key for each of them
-	heartbeatKey := fmt.Sprintf("%s/%s", context.HeartbeatPrefix, chunkCtx.HostId)
+	heartbeatKey := fmt.Sprintf("%s/%s", watchservice.HeartbeatPrefix, context.GlobalChunkCtx.HostId)
 
-	ch, err := chunkCtx.EtcdCli.MaintainKey(heartbeatKey, context.HeartbeatDeadline)
+	ch, err := context.GlobalChunkCtx.EtcdCli.MaintainKey(heartbeatKey, watchservice.HeartbeatDeadline)
 	if err != nil {
 		log.Fatal(err)
 		return err
@@ -20,7 +21,7 @@ func (chunkCtx *ChunkContext) StartHeartbeat() (error) {
 
 	for {
 		select {
-			case <- chunkCtx.EtcdCli.Client.Ctx().Done():
+			case <- context.GlobalChunkCtx.EtcdCli.Client.Ctx().Done():
 				return errors.New("server closed")
 			case _, ok := <-ch:
 				if !ok {
@@ -28,12 +29,4 @@ func (chunkCtx *ChunkContext) StartHeartbeat() (error) {
 				}
 		}
 	}
-
-	for {
-		sendHeartbeat()
-	}
-}
-
-func sendHeartbeat()  {
-	
 }

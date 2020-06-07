@@ -3,10 +3,11 @@ package server
 import (
 	"cherryfs/pkg/comm/pb"
 	cherryCtx "cherryfs/pkg/context"
-	"cherryfs/pkg/meta/initialize"
 	"log"
 	"google.golang.org/grpc"
 	"net"
+	"cherryfs/pkg/meta/watchservice"
+	"cherryfs/pkg/meta/initialize"
 )
 
 const (
@@ -19,18 +20,21 @@ type MetaServer struct {
 	pb.MetaServiceServer
 }
 
-var GlobalCtx cherryCtx.Context
-
 func StartServer()  {
 	lis, err := net.Listen("tcp", "127.0.0.1:50051")
 	if err != nil {
 		log.Fatalf("Failed to listen: %v", err)
 	}
 
-	GlobalCtx = initialize.Startup()
+	cherryCtx.GlobalCtx = new(cherryCtx.Context)
+	*cherryCtx.GlobalCtx = initialize.LoadClusterConfig()
 
-	go GlobalCtx.RegistryWatcher()
-	go GlobalCtx.HeartbeatWatcher()
+	log.Printf("global ctx: %v\n", cherryCtx.GlobalCtx.EtcdCli)
+
+	log.Printf("etcd client: %v\n", cherryCtx.GlobalCtx.EtcdCli)
+
+	go cherryCtx.GlobalCtx.RegistryWatcher()
+	go watchservice.HeartbeatWatcher()
 
 	s := grpc.NewServer()
 	pb.RegisterMetaServiceServer(s, &MetaServer{})

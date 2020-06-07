@@ -9,6 +9,7 @@ import (
 
 func (ctx *Context) RegistryWatcher() {
 	// Registry Watcher is watching for new (chunk) services for registration
+	log.Printf("start watching %s\n", HostKeyPrefix)
 	watchChan := ctx.EtcdCli.WatchKey(true, HostKeyPrefix)
 
 	for res := range watchChan {

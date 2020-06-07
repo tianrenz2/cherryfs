@@ -7,6 +7,7 @@ import "metaServer.proto";
 
 service ChunkServer {
     rpc PutObject(stream PutRequest) returns (PutResponse) {}
+    rpc CopyObject(stream PutRequest) returns (PutResponse) {}
     rpc GetObject(GetRequest) returns (stream GetResponse) {}
 }
 
@@ -17,6 +18,13 @@ message ObjectInfo {
 }
 
 message PutRequest {
+    oneof data{
+        ObjectInfo info = 1;
+        bytes content = 2;
+    }
+}
+
+message CopyObject {
     oneof data{
         ObjectInfo info = 1;
         bytes content = 2;

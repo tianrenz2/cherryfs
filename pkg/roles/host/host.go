@@ -1,9 +1,20 @@
 package host
 
 import (
+	"cherryfs/pkg/etcd"
 	"fmt"
-	"github.com/google/uuid"
-	"cherryfs/pkg/roles/dir"
+	"cherryfs/pkg/object"
+	"strings"
+	"log"
+	"encoding/json"
+	"os"
+)
+
+type HostState int32
+
+const (
+	HEALTHY HostState = 0
+	OFFLINE HostState = 1
 )
 
 type ConfigHost struct {
@@ -18,83 +29,42 @@ type Host struct {
 	Hostname string
 	Address string
 	Dirs []string
+	HostState HostState
 }
 
-/*
-	HostManager is responsible for managing all hosts in the cluster
-*/
-type HostManager struct {
-	Hosts []*Host
-	hostMap map[string]*Host
+func (Host *Host) ClaimAsLost() {
+	Host.HostState = OFFLINE
 }
 
-func (hostMg *HostManager) PrintHostMap() {
-	fmt.Println(hostMg.hostMap)
-}
+func (Host *Host) GetAllObjects(etcdClient etcd.EtcdClient) ([]object.Object, error) {
+	etcdClient.CreateEtcdClient(os.Getenv("ETCDADDR"))
+	prefix := fmt.Sprintf("%s/%s", object.ObjectKeyPrefix, Host.HostId)
+	kvMap, err := etcdClient.GetWithPrefix(prefix)
 
-func (hostMg *HostManager) GetHostByHostId(HostId string) (Host, error) {
-	if host, ok := hostMg.hostMap[HostId]; ok {
-		return *host, nil
-	}
-	return Host{}, fmt.Errorf("NotFound")
-}
-
-func (hostMg *HostManager) InitHostMap() (error) {
-	hostMg.hostMap = make(map[string]*Host)
-	for _, host := range hostMg.Hosts {
-		hostMg.hostMap[host.HostId] = host
+	log.Printf("kvmap %v\n", kvMap)
+	if err != nil {
+		return nil, err
 	}
 
-	return nil
-}
+	objects := make([]object.Object, 0)
 
-func (hostMg *HostManager) InitAllHosts(configHosts []ConfigHost, dirManager *dir.DirManager) (error) {
-	hostMg.Hosts = make([]*Host, 0)
-	for _, configHost := range configHosts {
-		dirIds := make([]string, 0)
-		hostId := uuid.New().String()
-		for _, d := range configHost.Dirs {
-			id, _ := dirManager.CreateDir(d, hostId)
-			dirIds = append(dirIds, id)
+	for key, _ := range kvMap {
+		slices := strings.Split(key, "/")
+		objectName := slices[len(slices) - 1]
+		log.Printf("to recover object %s\n", objectName)
+
+		objectKey := fmt.Sprintf("%s/%s", object.ObjectKeyPrefix, objectName)
+		objInfo, err := etcdClient.Get(objectKey)
+
+		if err != nil {
+			log.Printf("failed to get information of object %s\n", objectKey)
 		}
 
-		hostMg.Hosts = append(hostMg.Hosts, &Host{
-			HostId:hostId,
-			Hostname: configHost.Hostname,
-			Address: configHost.Address,
-			Dirs:dirIds,
-		})
-	}
-	hostMg.InitHostMap()
-	dirManager.InitDirMap()
-
-	return nil
-}
-
-func (hostMg *HostManager) AddHost(hostId, hostAddr string, hostDirs []dir.Dir, dirManager *dir.DirManager) (string, error) {
-	host, err := hostMg.InitNewHost(hostId, hostAddr, hostDirs, dirManager)
-	if err != nil {
-		return "", fmt.Errorf("%v", err)
-	}
-	hostMg.Hosts = append(hostMg.Hosts, host)
-	hostMg.hostMap[host.HostId] = host
-	return host.HostId, nil
-}
-
-func (hostMg *HostManager) InitNewHost(hostId, hostAddr string, hostDirs []dir.Dir, dirManager *dir.DirManager) (*Host, error)  {
-	dirs := make([]string, 0)
-	for _, hostDir := range hostDirs {
-		id, _ := dirManager.CreateDir(hostDir.Path, hostId)
-		dirManager.SetTotalSpace(id, hostDir.TotalSpace)
-		dirManager.SetUsedSpace(id, hostDir.UsedSpace)
-		dirs = append(dirs, id)
+		var objectInstance object.Object
+		err = json.Unmarshal([]byte(objInfo), &objectInstance)
+		log.Printf("info: %v\n", objectInstance)
+		objects = append(objects, objectInstance)
 	}
 
-	host := Host{
-		HostId:hostId,
-		Address:hostAddr,
-		Dirs:dirs,
-	}
-
-	return &host, nil
+	return objects, nil
 }

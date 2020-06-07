@@ -3,9 +3,8 @@ package object
 import (
 	"cherryfs/pkg/comm/pb"
 	"encoding/json"
-	"cherryfs/pkg/context"
 	"fmt"
-	"os"
+	"cherryfs/pkg/etcd"
 )
 
 type Object struct {
@@ -16,24 +15,25 @@ type Object struct {
 }
 
 const (
-	ObjectKeyPrefix = "Object/"
+	ObjectKeyPrefix = "Object"
 )
 
-func (Obj *Object) PutMeta(ctx context.Context) (error) {
+func (Obj *Object) PutMeta(client etcd.EtcdClient) (error) {
 	serialized, err := json.Marshal(Obj)
 
 	if err != nil {
 		return err
 	}
 
-	key := ObjectKeyPrefix + Obj.Name
+	key := fmt.Sprintf("%s/%s", ObjectKeyPrefix, Obj.Name)
 
 	fmt.Println(key)
-	ctx.EtcdCli.CreateEtcdClient(os.Getenv("ETCDADDR"))
-	err = ctx.EtcdCli.Put(key, string(serialized))
+	//ctx.EtcdCli.CreateEtcdClient(os.Getenv("ETCDADDR"))
+	err = client.Put(key, string(serialized))
 
 	for _, target := range Obj.Targets {
-		ctx.EtcdCli.Put(ObjectKeyPrefix + Obj.Name + "/" + target.DestId, "0")
+		putkey := fmt.Sprintf("%s/%s/%s", ObjectKeyPrefix, Obj.Name, target.DestId)
+		client.Put(putkey, "0")
 	}
 
 	if err != nil {
@@ -43,10 +43,12 @@ func (Obj *Object) PutMeta(ctx context.Context) (error) {
 	return nil
 }
 
-func GetObjectTarget(name string, ctx context.Context) (*pb.Target, error) {
-	ctx.EtcdCli.CreateEtcdClient(os.Getenv("ETCDADDR"))
+func GetObjectTarget(name string, client etcd.EtcdClient) (*pb.Target, error) {
+	//ctx.EtcdCli.CreateEtcdClient(os.Getenv("ETCDADDR"))
 
-	info, err := ctx.EtcdCli.Get(ObjectKeyPrefix + name)
+	objectKey := fmt.Sprintf("%s/%s", ObjectKeyPrefix, name)
+
+	info, err := client.Get(objectKey)
 
 	if err != nil {
 		return nil, fmt.Errorf("failed to get object: %v", err)
@@ -65,10 +67,10 @@ func GetObjectTarget(name string, ctx context.Context) (*pb.Target, error) {
 	chosenIndex := 0
 
 	for {
-		getKey := ObjectKeyPrefix + name + "/" + object.Targets[chosenIndex].DestId
+		getKey := fmt.Sprintf("%s/%s/%s", ObjectKeyPrefix, object.Targets[chosenIndex].DestId, name)
 
 		fmt.Printf("Get by key: %s\n", getKey)
-		state, _ = ctx.EtcdCli.Get(getKey)
+		state, _ = client.Get(getKey)
 		if state == "1" {
 			break
 		}
