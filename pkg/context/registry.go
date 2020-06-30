@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"log"
 	"cherryfs/pkg/config"
+	"fmt"
 )
 
 
@@ -27,13 +28,26 @@ func (ctx *Context) RegistryWatcher() {
 			log.Fatalf("err while registering %v", err)
 		}
 
-		for _, h := range ctx.HManager.Hosts {
-			log.Printf("host: %s\n", h.HostId)
+		msg := ""
+		for _, sg := range ctx.SGManager.SubGroups {
+			msg += fmt.Sprintf("subgroup: %d: \n", sg.SubGroupId)
+			for _, h := range sg.Hosts {
+				host, _ := ctx.HManager.GetHostByHostId(h)
+				msg += fmt.Sprintf("host: %s, ", host.HostId)
+				msg += fmt.Sprintf("%v\n", host.Dirs)
+			}
+			msg += fmt.Sprintf("\n\n")
 		}
 
-		for _, d := range ctx.DManager.Dirs {
-			log.Printf("dir %s size: %d, %d\n", d.Path, d.UsedSpace, d.TotalSpace)
-		}
+		log.Printf("%s\n", msg)
+
+		//for _, h := range ctx.HManager.Hosts {
+		//	log.Printf("host: %s\n", h.HostId)
+		//}
+
+		//for _, d := range ctx.DManager.Dirs {
+		//	log.Printf("dir %s size: %d, %d\n", d.Path, d.UsedSpace, d.TotalSpace)
+		//}
 	}
 }
 
@@ -59,7 +73,7 @@ func (ctx *Context) RegisterChunk(info ChunkInfo) error {
 		if err != nil {
 			return err
 		}
-		ctx.SGManager.SubGroups = append(ctx.SGManager.SubGroups, newSg)
+		ctx.SGManager.SubGroups = append(ctx.SGManager.SubGroups, &newSg)
 
 	} else {
 		// Find the subgroup which has the minimum of hosts and let the chunk join it
@@ -68,7 +82,7 @@ func (ctx *Context) RegisterChunk(info ChunkInfo) error {
 		for sgId, _ := range ctx.SGManager.SubGroups {
 			sg := ctx.SGManager.GetSubGroupById(sgId)
 			if len(sg.Hosts) < len(minHostSg.Hosts) {
-				minHostSg = sg
+				minHostSg = &sg
 			}
 		}
 

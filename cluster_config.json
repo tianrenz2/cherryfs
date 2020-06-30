@@ -1,4 +1,41 @@
 {
   "subgroupnum": 3,
-  "hosts": []
+  "hosts": [
+    {
+      "address": "192.168.3.0",
+      "dirs": [
+        "/var/log/xxx1"
+      ]
+    },
+    {
+      "address": "192.168.3.1",
+      "dirs": [
+        "/var/log/xxx2"
+      ]
+    },
+    {
+      "address": "192.168.3.2",
+      "dirs": [
+        "/var/log/xxx3"
+      ]
+    },
+    {
+      "address": "192.168.3.4",
+      "dirs": [
+        "/var/log/xxx4"
+      ]
+    },
+    {
+      "address": "192.168.3.5",
+      "dirs": [
+        "/var/log/xxx5"
+      ]
+    },
+    {
+      "address": "192.168.3.6",
+      "dirs": [
+        "/var/log/xxx6"
+      ]
+    }
+  ]
 }

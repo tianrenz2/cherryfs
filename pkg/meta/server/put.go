@@ -31,7 +31,14 @@ func (s *MetaServer)AskPut(ctx context.Context, askPutReq *pb.AskPutRequest) (*p
 
 	respTargets := make([]*pb.Target, 0)
 	for _, target := range targets {
-		respTargets = append(respTargets, &pb.Target{DestAddr: target.Host.Address, DestDir:target.Dir.Path, DestId:target.Host.HostId})
+		respTargets = append(
+			respTargets,
+			&pb.Target{
+				DestAddr: target.Host.Address,
+				DestDir:target.Dir.Path,
+				DestId:target.Host.HostId,
+				SgId:int32(target.SgId),
+			})
 	}
 
 	obj.Targets = respTargets

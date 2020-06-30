@@ -20,7 +20,7 @@ type SubGroup struct {
 }
 
 type SubGroupManager struct {
-	SubGroups []SubGroup
+	SubGroups []*SubGroup
 }
 
 func (subGroupMg *SubGroupManager) InitSubgroupSetup(allHosts []*host.Host) (error) {
@@ -38,10 +38,10 @@ func (subGroupMg *SubGroupManager) GetSubGroupNumber() int {
 }
 
 func (subGroupMg *SubGroupManager) GetSubGroupById(SubgroupId int) SubGroup {
-	return subGroupMg.SubGroups[SubgroupId]
+	return *subGroupMg.SubGroups[SubgroupId]
 }
 
-func (subGroupMg *SubGroupManager)InitSubgroups(allHosts []*host.Host) ([]SubGroup, error){
+func (subGroupMg *SubGroupManager)InitSubgroups(allHosts []*host.Host) ([]*SubGroup, error){
 	var subgroupNum = 0
 	hostNum := len(allHosts)
 
@@ -51,7 +51,7 @@ func (subGroupMg *SubGroupManager)InitSubgroups(allHosts []*host.Host) ([]SubGro
 		subgroupNum = config.MinReplicaNum
 	}
 
-	var subgroups = make([]SubGroup, 0)
+	var subgroups = make([]*SubGroup, 0)
 
 	if subgroupNum == 0 {
 		return subgroups, nil
@@ -67,7 +67,7 @@ func (subGroupMg *SubGroupManager)InitSubgroups(allHosts []*host.Host) ([]SubGro
 			return subgroups, fmt.Errorf("failed to initialize subgroups: %v", err)
 		}
 
-		subgroups = append(subgroups, subgroup)
+		subgroups = append(subgroups, &subgroup)
 	}
 
 	return subgroups, nil
@@ -97,6 +97,9 @@ func (subGroupMg *SubGroupManager) AssignSubgroupToHost() () {
 func (subGroupMg *SubGroupManager) AddSubgoup() {
 	groupIndex := len(subGroupMg.SubGroups)
 	var subgroup = SubGroup{Hosts: make([]string, 0), SubGroupId:groupIndex}
-	subGroupMg.SubGroups = append(subGroupMg.SubGroups, subgroup)
+	subGroupMg.SubGroups = append(subGroupMg.SubGroups, &subgroup)
+}
 
+func (subgroup *SubGroup) AddHost(host host.Host) {
+	subgroup.Hosts = append(subgroup.Hosts, host.HostId)
 }

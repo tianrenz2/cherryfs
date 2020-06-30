@@ -13,6 +13,8 @@ import (
 	"os"
 	"cherryfs/pkg/etcd"
 	"cherryfs/pkg/context"
+	"cherryfs/pkg/task"
+	ctx "context"
 )
 
 type ChunkServer struct {
@@ -36,7 +38,6 @@ func StartServer()  {
 		log.Fatalf("Failed to serve: %v", err)
 	}
 }
-
 
 func (s *ChunkServer) PutObject(stream pb.ChunkServer_PutObjectServer) (error) {
 	info, err := stream.Recv()
@@ -184,6 +185,16 @@ func (s *ChunkServer) GetObject(getRequest *pb.GetRequest, responser pb.ChunkSer
 	}
 
 	return nil
+}
+
+func (s *ChunkServer) TaskReceiver(context ctx.Context, taskRequest *pb.TaskRequest) (resp *pb.TaskResponse, err error) {
+	taskType := int(taskRequest.TaskType)
+	info := taskRequest.Value
+	err = task.TaskHandler(taskType, info)
+	resp = &pb.TaskResponse{
+		Status: 0,
+	}
+	return
 }
 
 func main()  {

@@ -44,14 +44,18 @@ func LostHostHandler(hostId string) {
 	log.Printf("claimed host %s \n", lostHost.HostId)
 
 	log.Printf("ctx: %v\n", context.GlobalCtx)
+	recoverDestSgId := lostHost.SubgroupId
 
-	//context.GlobalChunkCtx.EtcdCli = etcd.EtcdClient{}
-	//context.GlobalChunkCtx.EtcdCli.CreateEtcdClient(os.Getenv("ETCDADDR"))
-	//
+	recoverSrcSgId := recoverDestSgId + 1 % (len(context.GlobalCtx.SGManager.SubGroups))
 	objects, _ := lostHost.GetAllObjects(context.GlobalCtx.EtcdCli)
-	//
-	for _, obj := range objects {
-		log.Printf("objects to recover: %v", obj.Name)
+
+	recoverMap, err := GenerateRecoverMap(context.GlobalCtx, recoverSrcSgId, recoverDestSgId, objects)
+
+	err = SetupRecoverTransmissions(recoverMap)
+
+	if err != nil {
+		log.Printf("%v", err)
 	}
 
 }
+

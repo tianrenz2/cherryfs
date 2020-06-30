@@ -1,4 +1,4 @@
-package main
+package client
 
 import (
 	"cherryfs/pkg/comm/pb"
@@ -197,7 +197,7 @@ func (client *Client) DownloadObject(addr, dir, name, outputFile string) (error)
 	return nil
 }
 
-func main()  {
+func t()  {
 	cli := Client{}
 
 	cli.Init("127.0.0.1:50051")

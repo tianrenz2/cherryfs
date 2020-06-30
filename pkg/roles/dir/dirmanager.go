@@ -13,6 +13,11 @@ type DirManager struct {
 	dirMap map[string]*Dir
 }
 
+func (dirMg *DirManager) New() {
+	dirMg.Dirs = make([]*Dir, 0)
+	dirMg.dirMap = make(map[string]*Dir)
+}
+
 func (dirMg *DirManager) GetDirByDirId(dirId string) (Dir, error) {
 	if dir, ok := dirMg.dirMap[dirId]; ok {
 		return *dir, nil

@@ -1,4 +1,4 @@
-package main
+package task
 
 import (
 	"cherryfs/pkg/object"
@@ -36,6 +36,11 @@ type CopyTaskInfo struct {
 	LocalObjects []object.LocalObject
 }
 
+func (copyTaskInfo *CopyTaskInfo) AddLcObject(localObject object.LocalObject)  {
+	copyTaskInfo.LocalObjects = append(copyTaskInfo.LocalObjects, localObject)
+}
+
+
 func (TaskExecutor *Task) ExecuteTask() (err error) {
 	switch TaskExecutor.Type {
 		case CopyObjects:
@@ -48,9 +53,8 @@ func (TaskExecutor *Task) ExecuteTask() (err error) {
 func (TaskExecutor *Task) CopyObjectsTask() (err error) {
 	copyMap := TaskExecutor.Info.([]CopyTaskInfo)
 
-	log.Printf("start recovering objects \n")
+	log.Printf("start sending objects \n")
 	for _, copyTaskInfo := range copyMap {
-
 		target := pb.Target{
 			DestId: copyTaskInfo.Target.DestId,
 			DestAddr: copyTaskInfo.Target.DestAddr,

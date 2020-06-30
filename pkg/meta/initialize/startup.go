@@ -20,6 +20,8 @@ func Startup() (*context.Context) {
 	var hostManager host.HostManager
 	var GlobalSubGroupManager subgroup.SubGroupManager
 
+	dirManager.New()
+
 	hostManager.InitAllHosts(clusterConfig.Hosts, &dirManager)
 	ctx := context.Context{SGManager: &GlobalSubGroupManager, HManager:&hostManager, DManager:&dirManager}
 

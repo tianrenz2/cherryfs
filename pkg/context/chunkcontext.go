@@ -43,11 +43,13 @@ func (chunkCtx *ChunkContext) ObtainHostId() (error) {
 		hostId := uuid.New().String()
 		if _, err := chunkCtx.EtcdCli.Get(HostKeyPrefix + "/" + hostId); err != nil {
 			chunkCtx.HostId = hostId
-			f, err := os.Create(os.Getenv("HOSTIDPATH"))
+			hostIdPath := os.Getenv("HOST_ID_PATH")
+			log.Printf("create host id %s\n", hostIdPath)
+			f, err := os.Create(hostIdPath)
 			_, err = f.WriteString(hostId)
 
 			if err != nil {
-				log.Fatalf("failed to save the host id\n")
+				log.Fatalf("failed to save the host id, %v\n", err)
 			}
 
 			return nil

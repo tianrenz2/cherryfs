@@ -111,7 +111,7 @@ func (ctx *Context) RecoverCluster() (error) {
 	ctx.DecodeHosts()
 	ctx.DecodeDirs()
 
-	ctx.HManager.InitHostMap()
+	ctx.HManager.New()
 	ctx.DManager.InitDirMap()
 
 	return nil
@@ -123,7 +123,7 @@ func (ctx *Context) DecodeSubgroups() (error) {
 		return fmt.Errorf("%v", err)
 	}
 
-	ctx.SGManager.SubGroups = make([]subgroup.SubGroup, 0)
+	ctx.SGManager.SubGroups = make([]*subgroup.SubGroup, 0)
 
 	for k, v := range sgmap {
 		sgnameList := strings.Split(k, "/")
@@ -136,7 +136,7 @@ func (ctx *Context) DecodeSubgroups() (error) {
 		if err != nil {
 			fmt.Errorf("failed to decode subgroup %s: %v", sgname, err)
 		} else {
-			ctx.SGManager.SubGroups = append(ctx.SGManager.SubGroups, sg)
+			ctx.SGManager.SubGroups = append(ctx.SGManager.SubGroups, &sg)
 		}
 	}
 

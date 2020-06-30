@@ -1,4 +1,4 @@
-package main
+package client
 
 import (
 	"cherryfs/pkg/comm/pb"
@@ -10,7 +10,7 @@ import (
 )
 
 type PutClientIns struct {
-	client pb.PutClient
+	client pb.ChunkServerClient
 }
 
 func (c *PutClientIns) UploadObject(ctx context.Context, f string) (pb.PutResponse, error) {
@@ -74,13 +74,13 @@ func (c *PutClientIns) UploadObject(ctx context.Context, f string) (pb.PutRespon
 	return *ret, err
 }
 
-func main()  {
+func f()  {
 	var client = PutClientIns{}
 
 	req_addr := os.Args[1]
 
 	conn, _ := grpc.Dial(req_addr, grpc.WithInsecure(), grpc.WithBlock())
-	client.client = pb.NewPutClient(conn)
+	client.client = pb.NewChunkServerClient(conn)
 
 	file := "t.txt"
 

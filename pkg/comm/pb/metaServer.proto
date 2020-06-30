@@ -12,6 +12,7 @@ message Target {
     string destAddr = 1;
     string destDir = 2;
     string destId = 3;
+    int32 sgId = 4;
 }
 
 

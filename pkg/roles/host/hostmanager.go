@@ -14,6 +14,10 @@ type HostManager struct {
 	hostMap map[string]*Host
 }
 
+func (hostMg *HostManager) New() {
+	hostMg.initHostMap()
+}
+
 func (hostMg *HostManager) PrintHostMap() {
 	fmt.Println(hostMg.hostMap)
 }
@@ -32,8 +36,7 @@ func (hostMg *HostManager) GetHostPointerByHostId(HostId string) (*Host, error) 
 	return nil, fmt.Errorf("NotFound")
 }
 
-
-func (hostMg *HostManager) InitHostMap() (error) {
+func (hostMg *HostManager) initHostMap() (error) {
 	hostMg.hostMap = make(map[string]*Host)
 	for _, host := range hostMg.Hosts {
 		hostMg.hostMap[host.HostId] = host
@@ -45,9 +48,11 @@ func (hostMg *HostManager) InitHostMap() (error) {
 func (hostMg *HostManager) InitAllHosts(configHosts []ConfigHost, dirManager *dir.DirManager) (error) {
 	hostMg.Hosts = make([]*Host, 0)
 	for _, configHost := range configHosts {
+		fmt.Printf("cfg host: %s\n", configHost.Address)
 		dirIds := make([]string, 0)
 		hostId := uuid.New().String()
 		for _, d := range configHost.Dirs {
+			fmt.Printf("dir: %s\n", d)
 			id, _ := dirManager.CreateDir(d, hostId)
 			dirIds = append(dirIds, id)
 		}
@@ -59,7 +64,7 @@ func (hostMg *HostManager) InitAllHosts(configHosts []ConfigHost, dirManager *di
 			Dirs:dirIds,
 		})
 	}
-	hostMg.InitHostMap()
+	hostMg.New()
 	dirManager.InitDirMap()
 
 	return nil

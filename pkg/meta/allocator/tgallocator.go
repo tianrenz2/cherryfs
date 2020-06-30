@@ -16,6 +16,7 @@ import (
 type Target struct {
 	Host host.Host
 	Dir dir.Dir
+	SgId int
 }
 
 func (allocator *Allocator) AllocTargets(object object.Object) ([]Target, error) {
@@ -54,6 +55,9 @@ func (allocator *Allocator) AllocateTargetFromSg(subgroup subgroup.SubGroup, obj
 
 	for _, hId := range subgroup.Hosts {
 		h, err := allocator.Ctx.HManager.GetHostByHostId(hId)
+		if h.HostState == host.OFFLINE {
+			continue
+		}
 		if err != nil {
 			return Target{}, fmt.Errorf("%v", err)
 		}
@@ -87,6 +91,7 @@ func (allocator *Allocator) AllocateTargetFromSg(subgroup subgroup.SubGroup, obj
 	}
 	target.Host = selectedHost
 	target.Dir = selectedDir
+	target.SgId = subgroup.SubGroupId
 
 	return target, nil
 }

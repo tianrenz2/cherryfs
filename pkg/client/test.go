@@ -1,4 +1,4 @@
-package main
+package client
 
 import (
 	pb "cherryfs/pkg/comm/pb/test"
