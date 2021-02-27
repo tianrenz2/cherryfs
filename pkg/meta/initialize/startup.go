@@ -1,19 +1,19 @@
 package initialize
 
 import (
-	"cherryfs/pkg/roles/dir"
-	"cherryfs/pkg/roles/host"
-	"cherryfs/pkg/meta/subgroup"
-	"fmt"
+	"cherryfs/internal/etcd"
 	"cherryfs/pkg/context"
+	"cherryfs/pkg/meta/subgroup"
+	"cherryfs/pkg/role/dir"
+	"cherryfs/pkg/role/host"
+	"fmt"
 	"math/rand"
 	"os"
-	"cherryfs/pkg/etcd"
 )
 
-func Startup() (*context.Context) {
+func Startup() *context.Context {
 
-	var dirSpaces = []int64 {1, 5, 7, 10}
+	var dirSpaces = []int64{1, 5, 7, 10}
 
 	clusterConfig := LoadConfig()
 	var dirManager dir.DirManager
@@ -23,7 +23,7 @@ func Startup() (*context.Context) {
 	dirManager.New()
 
 	hostManager.InitAllHosts(clusterConfig.Hosts, &dirManager)
-	ctx := context.Context{SGManager: &GlobalSubGroupManager, HManager:&hostManager, DManager:&dirManager}
+	ctx := context.Context{SGManager: &GlobalSubGroupManager, HManager: &hostManager, DManager: &dirManager}
 
 	ctx.SGManager.InitSubgroupSetup(hostManager.Hosts)
 
@@ -35,7 +35,7 @@ func Startup() (*context.Context) {
 			for _, d := range h.Dirs {
 				fmt.Printf("dir: %s\n", d)
 				//dname, _ := (&dirManager).GetDirByDirId(d)
-				dirManager.UpdateDirSpaceByDirId(d, dirSpaces[rand.Int() % 4] * 1e6)
+				dirManager.UpdateDirSpaceByDirId(d, dirSpaces[rand.Int()%4]*1e6)
 				//fmt.Printf("updated space: %d, %d\n", d2.TotalSpace, dname.TotalSpace)
 			}
 		}
@@ -52,7 +52,7 @@ func Startup() (*context.Context) {
 	return &ctx
 }
 
-func LoadClusterConfig() (context.Context) {
+func LoadClusterConfig() context.Context {
 	ctx := context.Context{}
 	ctx.InitManagers()
 	ctx.EtcdCli = etcd.EtcdClient{}
@@ -61,14 +61,14 @@ func LoadClusterConfig() (context.Context) {
 	//ctx.EtcdCli.CreateEtcdClient(os.Getenv("ETCDADDR"))
 	err := ctx.RecoverCluster()
 
-	if err != nil{
+	if err != nil {
 		fmt.Errorf("%v", err)
 	}
 
 	return ctx
 }
 
-func main()  {
+func main() {
 	Startup()
 	LoadClusterConfig()
 }

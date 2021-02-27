@@ -1,10 +1,10 @@
 package subgroup
 
 import (
-	"cherryfs/pkg/roles/dir"
-	"fmt"
-	"cherryfs/pkg/roles/host"
 	"cherryfs/pkg/config"
+	"cherryfs/pkg/role/dir"
+	"cherryfs/pkg/role/host"
+	"fmt"
 )
 
 /*
@@ -23,10 +23,10 @@ type SubGroupManager struct {
 	SubGroups []*SubGroup
 }
 
-func (subGroupMg *SubGroupManager) InitSubgroupSetup(allHosts []*host.Host) (error) {
+func (subGroupMg *SubGroupManager) InitSubgroupSetup(allHosts []*host.Host) error {
 
 	subgroups, err := subGroupMg.InitSubgroups(allHosts)
-	if err != nil{
+	if err != nil {
 		return fmt.Errorf("failed to initialize subgroups: %v", err)
 	}
 	subGroupMg.SubGroups = subgroups
@@ -41,7 +41,7 @@ func (subGroupMg *SubGroupManager) GetSubGroupById(SubgroupId int) SubGroup {
 	return *subGroupMg.SubGroups[SubgroupId]
 }
 
-func (subGroupMg *SubGroupManager)InitSubgroups(allHosts []*host.Host) ([]*SubGroup, error){
+func (subGroupMg *SubGroupManager) InitSubgroups(allHosts []*host.Host) ([]*SubGroup, error) {
 	var subgroupNum = 0
 	hostNum := len(allHosts)
 
@@ -59,7 +59,7 @@ func (subGroupMg *SubGroupManager)InitSubgroups(allHosts []*host.Host) ([]*SubGr
 
 	numPerGroup := hostNum / subgroupNum
 
-	for groupIndex :=0; groupIndex < subgroupNum; groupIndex++ {
+	for groupIndex := 0; groupIndex < subgroupNum; groupIndex++ {
 		groupStart := groupIndex * numPerGroup
 		groupEnd := groupStart + numPerGroup
 		subgroup, err := subGroupMg.InitOneSubgroup(allHosts, groupIndex, groupStart, groupEnd)
@@ -74,21 +74,21 @@ func (subGroupMg *SubGroupManager)InitSubgroups(allHosts []*host.Host) ([]*SubGr
 }
 
 func (subGroupMg *SubGroupManager) InitOneSubgroup(allHosts []*host.Host, groupIndex, groupStart, groupEnd int) (SubGroup, error) {
-	var subgroup = SubGroup{Hosts: make([]string, 0), SubGroupId:groupIndex}
+	var subgroup = SubGroup{Hosts: make([]string, 0), SubGroupId: groupIndex}
 	subgroup.DirSettings = dir.DirSubGroupSetting{ReliefNum: dir.DefaultReliefNum}
 
 	if groupEnd > len(allHosts) {
 		groupEnd = len(allHosts)
 	}
 
-	for hostIndex:= groupStart; hostIndex < groupEnd; hostIndex++ {
+	for hostIndex := groupStart; hostIndex < groupEnd; hostIndex++ {
 		subgroup.Hosts = append(subgroup.Hosts, allHosts[hostIndex].HostId)
 	}
 
 	return subgroup, nil
 }
 
-func (subGroupMg *SubGroupManager) AssignSubgroupToHost() () {
+func (subGroupMg *SubGroupManager) AssignSubgroupToHost() {
 	if len(subGroupMg.SubGroups) < config.MinReplicaNum {
 
 	}
@@ -96,7 +96,7 @@ func (subGroupMg *SubGroupManager) AssignSubgroupToHost() () {
 
 func (subGroupMg *SubGroupManager) AddSubgoup() {
 	groupIndex := len(subGroupMg.SubGroups)
-	var subgroup = SubGroup{Hosts: make([]string, 0), SubGroupId:groupIndex}
+	var subgroup = SubGroup{Hosts: make([]string, 0), SubGroupId: groupIndex}
 	subGroupMg.SubGroups = append(subGroupMg.SubGroups, &subgroup)
 }
 

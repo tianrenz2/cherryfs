@@ -1,15 +1,15 @@
 package chunkmanage
 
 import (
-	"strings"
-	"os"
-	"io/ioutil"
-	"cherryfs/pkg/roles/dir"
 	"cherryfs/pkg/context"
+	"cherryfs/pkg/role/dir"
+	"io/ioutil"
 	"log"
+	"os"
+	"strings"
 )
 
-func StartupChunk() (error) {
+func StartupChunk() error {
 
 	metaAddrs := strings.Split(os.Getenv("ETCDADDR"), ",")
 	context.GlobalChunkCtx.MetaAddrs = metaAddrs
@@ -19,7 +19,7 @@ func StartupChunk() (error) {
 	if os.IsNotExist(err) {
 		context.GlobalChunkCtx.ObtainHostId()
 		log.Printf("generate a new host id: %s\n", context.GlobalChunkCtx.HostId)
-	}else {
+	} else {
 		b, _ := ioutil.ReadAll(hostFile)
 		log.Printf("existing hostid: %s\n", string(b))
 		context.GlobalChunkCtx.HostId = string(b)
@@ -32,9 +32,9 @@ func StartupChunk() (error) {
 
 	for _, d := range chunkCfg.Dirs {
 		context.GlobalChunkCtx.LcDirs = append(context.GlobalChunkCtx.LcDirs, &dir.Dir{
-			Path: d,
-			HostId:context.GlobalChunkCtx.HostId,
-			UsedSpace: 0,
+			Path:       d,
+			HostId:     context.GlobalChunkCtx.HostId,
+			UsedSpace:  0,
 			TotalSpace: 0,
 		})
 	}

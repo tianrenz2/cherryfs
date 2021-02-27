@@ -5,7 +5,7 @@ import (
 	"os"
 	"path"
 	"fmt"
-	"cherryfs/pkg/etcd"
+	"cherryfs/internal/etcd"
 )
 
 type LocalObject struct {

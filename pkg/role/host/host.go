@@ -1,8 +1,8 @@
 package host
 
 import (
-	"cherryfs/pkg/etcd"
 	"fmt"
+	"cherryfs/internal/etcd"
 	"cherryfs/pkg/object"
 	"strings"
 	"log"

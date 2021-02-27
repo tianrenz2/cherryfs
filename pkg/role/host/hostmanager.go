@@ -1,8 +1,9 @@
 package host
 
 import (
-	"cherryfs/pkg/roles/dir"
+	"cherryfs/pkg/role/dir"
 	"fmt"
+
 	"github.com/google/uuid"
 )
 
@@ -10,7 +11,7 @@ import (
 	HostManager is responsible for managing all hosts in the cluster
 */
 type HostManager struct {
-	Hosts []*Host
+	Hosts   []*Host
 	hostMap map[string]*Host
 }
 
@@ -36,7 +37,7 @@ func (hostMg *HostManager) GetHostPointerByHostId(HostId string) (*Host, error) 
 	return nil, fmt.Errorf("NotFound")
 }
 
-func (hostMg *HostManager) initHostMap() (error) {
+func (hostMg *HostManager) initHostMap() error {
 	hostMg.hostMap = make(map[string]*Host)
 	for _, host := range hostMg.Hosts {
 		hostMg.hostMap[host.HostId] = host
@@ -45,7 +46,7 @@ func (hostMg *HostManager) initHostMap() (error) {
 	return nil
 }
 
-func (hostMg *HostManager) InitAllHosts(configHosts []ConfigHost, dirManager *dir.DirManager) (error) {
+func (hostMg *HostManager) InitAllHosts(configHosts []ConfigHost, dirManager *dir.DirManager) error {
 	hostMg.Hosts = make([]*Host, 0)
 	for _, configHost := range configHosts {
 		fmt.Printf("cfg host: %s\n", configHost.Address)
@@ -58,10 +59,10 @@ func (hostMg *HostManager) InitAllHosts(configHosts []ConfigHost, dirManager *di
 		}
 
 		hostMg.Hosts = append(hostMg.Hosts, &Host{
-			HostId:hostId,
+			HostId:   hostId,
 			Hostname: configHost.Hostname,
-			Address: configHost.Address,
-			Dirs:dirIds,
+			Address:  configHost.Address,
+			Dirs:     dirIds,
 		})
 	}
 	hostMg.New()
@@ -90,9 +91,9 @@ func (hostMg *HostManager) InitNewHost(hostId, hostAddr string, hostDirs []dir.D
 	}
 
 	host := Host{
-		HostId:  hostId,
-		Address: hostAddr,
-		Dirs:    dirs,
+		HostId:    hostId,
+		Address:   hostAddr,
+		Dirs:      dirs,
 		HostState: HEALTHY,
 	}
 

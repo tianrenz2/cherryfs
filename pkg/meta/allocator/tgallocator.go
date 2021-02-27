@@ -2,9 +2,9 @@ package allocator
 
 import (
 	"cherryfs/pkg/meta/subgroup"
-	"cherryfs/pkg/roles/dir"
-	"cherryfs/pkg/roles/host"
 	"cherryfs/pkg/object"
+	"cherryfs/pkg/role/dir"
+	"cherryfs/pkg/role/host"
 	"fmt"
 )
 
@@ -15,14 +15,14 @@ import (
 
 type Target struct {
 	Host host.Host
-	Dir dir.Dir
+	Dir  dir.Dir
 	SgId int
 }
 
 func (allocator *Allocator) AllocTargets(object object.Object) ([]Target, error) {
 	allocSgs, errSg := allocator.AllocSubgroups(object)
-	var targets = make([]Target,0)
-	
+	var targets = make([]Target, 0)
+
 	if errSg != nil {
 		return targets, errSg
 	}
@@ -38,7 +38,7 @@ func (allocator *Allocator) AllocateTargetsFromSgs(subgroups []subgroup.SubGroup
 	var allocatedTgs = make([]Target, 0)
 	for _, sg := range subgroups {
 		target, err := allocator.AllocateTargetFromSg(sg, obj)
-		if err != nil{
+		if err != nil {
 			return allocatedTgs, err
 		}
 		allocatedTgs = append(allocatedTgs, target)

@@ -1,15 +1,15 @@
 package context
 
 import (
-	"cherryfs/pkg/roles/host"
-	"cherryfs/pkg/roles/dir"
+	"cherryfs/internal/etcd"
 	"cherryfs/pkg/meta/subgroup"
-	"cherryfs/pkg/etcd"
+	"cherryfs/pkg/role/dir"
+	"cherryfs/pkg/role/host"
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
-	"strings"
 	"strconv"
+	"strings"
 )
 
 const (
@@ -25,11 +25,11 @@ const (
 */
 type Context struct {
 	SGManager *subgroup.SubGroupManager
-	HManager *host.HostManager
-	DManager *dir.DirManager
-	EtcdCli etcd.EtcdClient
-	Leader string
-	HostId string
+	HManager  *host.HostManager
+	DManager  *dir.DirManager
+	EtcdCli   etcd.EtcdClient
+	Leader    string
+	HostId    string
 }
 
 func (ctx *Context) InitManagers() {
@@ -38,15 +38,14 @@ func (ctx *Context) InitManagers() {
 	ctx.DManager = &dir.DirManager{}
 }
 
-
-func (ctx *Context) PersistCluster() (error) {
+func (ctx *Context) PersistCluster() error {
 	ctx.PersistSubGroups()
 	ctx.PersistHosts()
 	ctx.PersistDirs()
 	return nil
 }
 
-func (ctx *Context) PersistSubGroups() (error) {
+func (ctx *Context) PersistSubGroups() error {
 	for _, sg := range ctx.SGManager.SubGroups {
 		encodedStr, err := ctx.EncodeStruct(sg)
 		if err != nil {
@@ -66,7 +65,7 @@ func (ctx *Context) PersistSubGroups() (error) {
 	return nil
 }
 
-func (ctx *Context) PersistHosts() (error) {
+func (ctx *Context) PersistHosts() error {
 	for _, h := range ctx.HManager.Hosts {
 		encodedStr, err := ctx.EncodeStruct(h)
 		if err != nil {
@@ -86,7 +85,7 @@ func (ctx *Context) PersistHosts() (error) {
 	return nil
 }
 
-func (ctx *Context) PersistDirs() (error) {
+func (ctx *Context) PersistDirs() error {
 	for _, d := range ctx.DManager.Dirs {
 		encodedStr, err := ctx.EncodeStruct(d)
 		if err != nil {
@@ -106,7 +105,7 @@ func (ctx *Context) PersistDirs() (error) {
 	return nil
 }
 
-func (ctx *Context) RecoverCluster() (error) {
+func (ctx *Context) RecoverCluster() error {
 	ctx.DecodeSubgroups()
 	ctx.DecodeHosts()
 	ctx.DecodeDirs()
@@ -117,7 +116,7 @@ func (ctx *Context) RecoverCluster() (error) {
 	return nil
 }
 
-func (ctx *Context) DecodeSubgroups() (error) {
+func (ctx *Context) DecodeSubgroups() error {
 	sgmap, err := ctx.EtcdCli.GetWithPrefix(SubGroupKeyPrefix)
 	if err != nil {
 		return fmt.Errorf("%v", err)
@@ -127,7 +126,7 @@ func (ctx *Context) DecodeSubgroups() (error) {
 
 	for k, v := range sgmap {
 		sgnameList := strings.Split(k, "/")
-		sgname := sgnameList[len(sgnameList) - 1]
+		sgname := sgnameList[len(sgnameList)-1]
 		var sg subgroup.SubGroup
 
 		sgBytes, err := ctx.DecodeStruct(v)
@@ -143,7 +142,7 @@ func (ctx *Context) DecodeSubgroups() (error) {
 	return nil
 }
 
-func (ctx *Context) DecodeHosts() (error) {
+func (ctx *Context) DecodeHosts() error {
 	hostmap, err := ctx.EtcdCli.GetWithPrefix(HostKeyPrefix)
 	if err != nil {
 		return fmt.Errorf("%v", err)
@@ -153,7 +152,7 @@ func (ctx *Context) DecodeHosts() (error) {
 
 	for k, v := range hostmap {
 		hostIdList := strings.Split(k, "/")
-		hostId := hostIdList[len(hostIdList) - 1]
+		hostId := hostIdList[len(hostIdList)-1]
 		var h host.Host
 
 		dirBytes, err := ctx.DecodeStruct(v)
@@ -169,7 +168,7 @@ func (ctx *Context) DecodeHosts() (error) {
 	return nil
 }
 
-func (ctx *Context) DecodeDirs() (error) {
+func (ctx *Context) DecodeDirs() error {
 	dirmap, err := ctx.EtcdCli.GetWithPrefix(DirKeyPrefix)
 	if err != nil {
 		return fmt.Errorf("%v", err)
@@ -179,7 +178,7 @@ func (ctx *Context) DecodeDirs() (error) {
 
 	for k, v := range dirmap {
 		dirIdList := strings.Split(k, "/")
-		dirId := dirIdList[len(dirIdList) - 1]
+		dirId := dirIdList[len(dirIdList)-1]
 		var d dir.Dir
 
 		dirBytes, err := ctx.DecodeStruct(v)

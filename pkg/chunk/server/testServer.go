@@ -3,7 +3,7 @@ package main
 import (
 	"net"
 	"google.golang.org/grpc"
-	pb "cherryfs/pkg/comm/pb/test"
+	pb "cherryfs/pkg/comm/pb"
 	"log"
 	"context"
 	"fmt"

@@ -2,7 +2,7 @@ package comm
 
 import (
 	"cherryfs/pkg/object"
-	"cherryfs/pkg/comm/chunkserverpb"
+	"cherryfs/pkg/comm/pb"
 )
 
 type ObjectSender struct {

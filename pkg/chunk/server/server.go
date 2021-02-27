@@ -11,7 +11,7 @@ import (
 	"cherryfs/pkg/object"
 	"cherryfs/pkg/chunk/chunkmanage"
 	"os"
-	"cherryfs/pkg/etcd"
+	"cherryfs/internal/etcd"
 	"cherryfs/pkg/context"
 	"cherryfs/pkg/task"
 	ctx "context"

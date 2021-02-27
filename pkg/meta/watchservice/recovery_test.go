@@ -2,7 +2,7 @@ package watchservice_test
 
 import (
 	"testing"
-	"cherryfs/pkg/mock"
+	"cherryfs/internal/mock"
 	"github.com/stretchr/testify/assert"
 	"fmt"
 	"cherryfs/pkg/object"

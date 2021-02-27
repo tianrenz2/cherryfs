@@ -1,7 +1,7 @@
 package watchservice
 
 import (
-	"go.etcd.io/etcd/mvcc/mvccpb"
+	"github.com/coreos/etcd/mvcc/mvccpb"
 	"log"
 	"strings"
 	"cherryfs/pkg/context"

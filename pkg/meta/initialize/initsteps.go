@@ -1,10 +1,10 @@
 package initialize
 
 import (
+	"cherryfs/pkg/role/host"
+	"encoding/json"
 	"io/ioutil"
 	"log"
-	"encoding/json"
-	"cherryfs/pkg/roles/host"
 )
 
 const (
@@ -13,9 +13,8 @@ const (
 
 type Config struct {
 	Subgroupnum int
-	Hosts []host.ConfigHost
+	Hosts       []host.ConfigHost
 }
-
 
 func LoadConfig() Config {
 	data, err := ioutil.ReadFile(configPath)
@@ -41,9 +40,9 @@ func LoadHosts(configHosts []host.ConfigHost) []host.Host {
 		}
 
 		hosts = append(hosts, host.Host{
-			Hostname: configHost.Hostname,
-			Address: configHost.Address,
-			Dirs: dirs,
+			Hostname:  configHost.Hostname,
+			Address:   configHost.Address,
+			Dirs:      dirs,
 			HostState: host.HEALTHY,
 		})
 	}

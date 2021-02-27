@@ -4,7 +4,7 @@ import (
 	"cherryfs/pkg/comm/pb"
 	"encoding/json"
 	"fmt"
-	"cherryfs/pkg/etcd"
+	"cherryfs/internal/etcd"
 )
 
 type Object struct {

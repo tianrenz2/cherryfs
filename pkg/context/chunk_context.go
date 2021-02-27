@@ -1,30 +1,31 @@
 package context
 
 import (
-	"cherryfs/pkg/roles/dir"
 	"cherryfs/pkg/comm/pb"
-	"cherryfs/pkg/etcd"
-	"os"
-	"io/ioutil"
-	"fmt"
-	"log"
+	"cherryfs/internal/etcd"
+	"cherryfs/pkg/role/dir"
 	"encoding/json"
+	"fmt"
+	"io/ioutil"
+	"log"
+	"os"
+
 	"github.com/google/uuid"
 )
 
 type ChunkInfo struct {
 	HostId string
-	Addr string
-	Dirs []dir.Dir
+	Addr   string
+	Dirs   []dir.Dir
 }
 
 type ChunkContext struct {
-	HostId string
-	MetaAddrs []string
-	Address string
-	Client  pb.ChunkServerClient
-	EtcdCli etcd.EtcdClient
-	LcDirs []*dir.Dir
+	HostId     string
+	MetaAddrs  []string
+	Address    string
+	Client     pb.ChunkServerClient
+	EtcdCli    etcd.EtcdClient
+	LcDirs     []*dir.Dir
 	ResponseId int64
 }
 
@@ -33,11 +34,9 @@ type ChunkConfig struct {
 	Dirs []string
 }
 
-
 var GlobalChunkCtx *ChunkContext
 
-
-func (chunkCtx *ChunkContext) ObtainHostId() (error) {
+func (chunkCtx *ChunkContext) ObtainHostId() error {
 	exist := true
 	for exist {
 		hostId := uuid.New().String()
@@ -83,9 +82,9 @@ func (chunkCtx *ChunkContext) RegisterChunkService(config ChunkConfig) error {
 	}
 
 	chunkInfo := ChunkInfo{
-		HostId:chunkCtx.HostId,
-		Addr: chunkCtx.Address,
-		Dirs:lcDirs,
+		HostId: chunkCtx.HostId,
+		Addr:   chunkCtx.Address,
+		Dirs:   lcDirs,
 	}
 
 	log.Printf("%v\n", chunkInfo)
