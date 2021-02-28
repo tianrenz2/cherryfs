@@ -38,7 +38,7 @@ func LostHostHandler(hostId string) {
 	lostHost, err := context.GlobalCtx.HManager.GetHostPointerByHostId(hostId)
 
 	if err != nil {
-		log.Fatalf("failed to get the host %v \n", err)
+		log.Fatalf("failed to get the host: %v \n", err)
 	}
 	lostHost.ClaimAsLost()
 	log.Printf("claimed host %s \n", lostHost.HostId)

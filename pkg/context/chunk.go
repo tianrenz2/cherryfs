@@ -57,7 +57,7 @@ func (chunkCtx *ChunkContext) ObtainHostId() error {
 }
 
 func (chunkCtx *ChunkContext) SetupConfig() (ChunkConfig, error) {
-	configPath := os.Getenv("CONF_PATH")
+	configPath := os.Getenv("CHUNK_CONFIG")
 	data, err := ioutil.ReadFile(configPath)
 	if err != nil {
 		return ChunkConfig{}, fmt.Errorf("failed to load the config file: %v", err)

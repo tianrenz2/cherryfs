@@ -5,10 +5,11 @@ import (
 	"encoding/json"
 	"io/ioutil"
 	"log"
+	"os"
 )
 
 const (
-	configPath = "/root/go/src/cherryfs/cluster_config.json"
+	defaultConfigPath = "/etc/cherryfs/cluster_config.json"
 )
 
 type Config struct {
@@ -17,6 +18,11 @@ type Config struct {
 }
 
 func LoadConfig() Config {
+	configPath := os.Getenv("META_CONFIG")
+	if configPath == "" {
+		configPath = defaultConfigPath
+	}
+
 	data, err := ioutil.ReadFile(configPath)
 	if err != nil {
 		log.Fatalf("Failed to load the config file: %v", err)

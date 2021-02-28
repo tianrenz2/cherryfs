@@ -20,7 +20,9 @@ func (ctx *Context) RegistryWatcher() {
 		err := json.Unmarshal(val, &chunkInfo)
 
 		if err != nil {
-			log.Fatalf("err while parsing data: %v\n", err)
+			log.Fatalf("err while parsing data: %v, " + 
+					   "please make sure there is configured " + 
+					   "chunk service running\n", err)
 		}
 
 		err = ctx.RegisterChunk(chunkInfo)
