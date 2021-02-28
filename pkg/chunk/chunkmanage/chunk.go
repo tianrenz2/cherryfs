@@ -10,7 +10,6 @@ import (
 )
 
 func StartupChunk() error {
-
 	metaAddrs := strings.Split(os.Getenv("ETCDADDR"), ",")
 	context.GlobalChunkCtx.MetaAddrs = metaAddrs
 
@@ -29,7 +28,7 @@ func StartupChunk() error {
 	if err != nil {
 		log.Fatalf("failed to setup configuration: %v\n", err)
 	}
-
+	context.GlobalChunkCtx.Address = chunkCfg.Addr
 	for _, d := range chunkCfg.Dirs {
 		context.GlobalChunkCtx.LcDirs = append(context.GlobalChunkCtx.LcDirs, &dir.Dir{
 			Path:       d,

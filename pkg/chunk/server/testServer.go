@@ -1,9 +1,9 @@
-package main
+package server
 
 import (
 	"net"
 	"google.golang.org/grpc"
-	pb "cherryfs/pkg/comm/pb"
+	pb "cherryfs/pkg/comm/pb/test"
 	"log"
 	"context"
 	"fmt"
@@ -13,9 +13,6 @@ type TestServer struct {
 	pb.UnimplementedTestPutServiceServer
 }
 
-func main()  {
-	StartTestServer()
-}
 
 func StartTestServer()  {
 	lis, err := net.Listen("tcp", ":50051")

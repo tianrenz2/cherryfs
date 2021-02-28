@@ -1,4 +1,4 @@
-package main
+package server
 
 import (
 	"cherryfs/pkg/comm/pb"
@@ -21,10 +21,9 @@ type ChunkServer struct {
 	pb.UnimplementedChunkServerServer
 }
 
-var address	= ""
 
 func StartServer()  {
-	//chunkContext = initContext()
+	// chunkContext = initContext()
 	lis, err := net.Listen("tcp", context.GlobalChunkCtx.Address)
 	if err != nil {
 		log.Fatalf("Failed to listen: %v", err)
@@ -197,17 +196,12 @@ func (s *ChunkServer) TaskReceiver(context ctx.Context, taskRequest *pb.TaskRequ
 	return
 }
 
-func main()  {
+func StartChunkService() {
 	var etcdClient etcd.EtcdClient
 	etcdClient.CreateEtcdClient(os.Getenv("ETCDADDR"))
 	context.GlobalChunkCtx = &context.ChunkContext{}
 	context.GlobalChunkCtx.EtcdCli = etcdClient
-	//context.GlobalChunkCtx.EtcdCli.CreateEtcdClient(os.Getenv("ETCDADDR"))
-
-	address = os.Getenv("ADDR")
-	port := os.Getenv("PORT")
-	context.GlobalChunkCtx.Address = address + ":" + port
-
+	
 	chunkmanage.StartupChunk()
 	go chunkmanage.StartHeartbeat()
 

@@ -1,4 +1,4 @@
-package main
+package server
 
 import (
 	"cherryfs/pkg/comm/pb"
@@ -41,8 +41,4 @@ func StartServer()  {
 	if err := s.Serve(lis); err != nil {
 		log.Fatalf("Failed to serve: %v", err)
 	}
-}
-
-func main()  {
-	StartServer()
 }
